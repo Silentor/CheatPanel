@@ -1,0 +1,17 @@
+{
+  "name": "com.silentor.cheatpanel",
+  "version": "0.1.0",
+  "displayName": "Cheat Panel",
+  "description": "Ingame cheat console",
+  "unity": "2022.3",
+  "license": "MIT",
+  "keywords": [
+    "cheat",
+    "console",
+    "runtime"
+  ],
+  "author": {
+    "name": "Silentor",
+    "url": "https://github.com/Silentor"
+  }
+}

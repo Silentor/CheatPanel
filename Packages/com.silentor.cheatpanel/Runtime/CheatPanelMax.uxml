@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
+    <ui:TabView name="CheatTabView" class="TabView" />
+</ui:UXML>

@@ -1,0 +1,31 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
+    <ui:VisualElement name="SystemTab" class="Tab" style="flex-grow: 1;">
+        <ui:VisualElement name="DeviceInfo">
+            <ui:VisualElement name="ToolBar" class="CheatLine">
+                <ui:Label text="Device and app info:" name="DeviceInfoLbl" class="CheatLabel" style="flex-grow: 1;" />
+                <ui:Button text="Expand" name="ExpandBtn" class="CheatBtn" />
+                <ui:Button text="Copy to clp" name="CopyBtn" class="CheatBtn" />
+                <ui:Button text="-" name="MinimizeBtn" tooltip="Minimize cheat panel" class="CheatBtn" />
+            </ui:VisualElement>
+            <ui:Label name="DeviceInfoValue" class="CheatLabel" style="white-space: normal;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="TimeScale" style="flex-direction: row;">
+            <ui:Label text="Label" name="TimeScaleLbl" class="CheatLabel" style="width: 70px; min-width: 70px; max-width: 70px;" />
+            <ui:Slider value="1" high-value="2" name="TimeScaleSlider" style="flex-grow: 1;" />
+            <ui:Button text="0" name="TS_0" class="CheatBtn" />
+            <ui:Button text="0.1" name="TS_0-1" class="CheatBtn" />
+            <ui:Button text="1" name="TS_1" class="CheatBtn" />
+        </ui:VisualElement>
+        <ui:VisualElement name="FPS" style="flex-direction: column;">
+            <ui:Label text="FPS 99" name="FPSStatsLbl" class="CheatLabel" style="width: 70px; min-width: 70px; max-width: 70px;" />
+            <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+                <ui:Label text="FPS 30" name="TargetFPS" class="CheatLabel" />
+                <ui:Slider value="1" high-value="2" name="FPSSlider" style="flex-grow: 1;" />
+                <ui:Button text="0" name="FPS_0" class="CheatBtn" />
+                <ui:Button text="0.1" name="TS_0-1" class="CheatBtn" />
+                <ui:Button text="1" name="TS_1" class="CheatBtn" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

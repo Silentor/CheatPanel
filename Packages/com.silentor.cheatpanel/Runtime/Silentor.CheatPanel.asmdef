@@ -1,0 +1,14 @@
+{
+    "name": "Silentor.CheatPanel",
+    "rootNamespace": "Silentor.CheatPanel",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
