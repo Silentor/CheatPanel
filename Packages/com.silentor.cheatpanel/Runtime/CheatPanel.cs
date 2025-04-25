@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = System.Object;
@@ -19,14 +20,23 @@ namespace Silentor.CheatPanel
         private SettingsDTO _settings;
         private Settings    _settingsManager;
         private float       _updatedTimeScale = -1f;
+        private int         _updatedFps       = -2;
+        private FpsMeter    _fpsMeter;
 
         private void Awake( )
         {
             _doc             = GetComponent<UIDocument>();
             _settingsManager = new Settings();
             _settings        = _settingsManager.GetSettings();
+            _fpsMeter        = new FpsMeter();
+            _fpsMeter.StartMeter();
             
             ShowPanel( );
+        }
+
+        private void OnDestroy( )
+        {
+            _fpsMeter.StopMeter();
         }
 
         private void ShowPanel( )
@@ -38,8 +48,10 @@ namespace Silentor.CheatPanel
                 var panelInstance = CheatPanelMaximized.Instantiate( );
                 //panelInstance.style.paddingTop = Screen.height - Screen.safeArea.yMax;
                 root.Add( panelInstance );
-                var tabView = root.Q<TabView>( "CheatTabView" );
+                var tabView = root.Q<VisualElement>( "CheatTabView" );
+                tabView.Q("Header").Q( "ToolBar" ).Q<Button>( "MinimizeBtn" ).clicked += CheatPanelOnMinMaxToggleClicked;
                 var systemTab = CreateSystemTab( );
+                AddTab( tabView, "System", systemTab );
                 tabView.Add( systemTab );
             }
             else
@@ -61,15 +73,14 @@ namespace Silentor.CheatPanel
             ShowPanel();
         }
 
-        private Tab CreateSystemTab( )
+        private VisualElement CreateSystemTab( )
         {
-            var  result   = new Tab("System");
+            var  result   = new VisualElement( );
+            result.AddToClassList( "Tab" );
             var instance = SystemTab.Instantiate( );
 
             var sysInfoBox       = instance.Q<VisualElement>( "DeviceInfo" );
             var sysInfoLabel     = sysInfoBox.Q<Label>( "DeviceInfoValue" );
-            var minBtn           = sysInfoBox.Q<Button>( "MinimizeBtn" );
-            minBtn.clicked += CheatPanelOnMinMaxToggleClicked;
             var expandSysInfoBtn = sysInfoBox.Q<Button>( "ExpandBtn" );
             expandSysInfoBtn.clicked += ( ) => ExpandSysInfoOnClicked( sysInfoLabel, expandSysInfoBtn );
 
@@ -91,8 +102,52 @@ namespace Silentor.CheatPanel
                 }
             } ).Every( 100 );
 
+            var fpsBox = instance.Q<VisualElement>( "FPS" );
+            var fpsStatsLbl = fpsBox.Q<Label>( "FPSStatsLbl" );
+            var fpsSlider = fpsBox.Q<Slider>( "FPSSlider" );
+            var fpsTargetLbl = fpsBox.Q<Label>( "TargetFPS" );
+            fpsSlider.RegisterValueChangedCallback( evt => Application.targetFrameRate = (int)evt.newValue );
+            // Mobile oriented controls
+            fpsBox.Q<Button>( "FPS_X" ).clicked += () => Application.targetFrameRate = -1;
+            fpsBox.Q<Button>( "FPS_15" ).clicked += () => Application.targetFrameRate = 15;
+            fpsBox.Q<Button>( "FPS_30" ).clicked += () => Application.targetFrameRate = 30;
+            fpsBox.Q<Button>( "FPS_60" ).clicked += () => Application.targetFrameRate = 60;
+            fpsStatsLbl.schedule.Execute( () => fpsStatsLbl.text = GetFPSStats() ).Every( 1000 );
+            fpsBox.schedule.Execute( ( ) =>
+            {
+                if ( Application.targetFrameRate != _updatedFps )
+                {
+                    _updatedFps = Application.targetFrameRate;
+                    fpsSlider.SetValueWithoutNotify( _updatedFps );
+                    fpsTargetLbl.text = $"FPS: {_updatedFps}";
+                }
+            } ).Every( 100 );
+            //todo add desktop controls (vSync)
+
             result.Add( instance );
             return result;
+        }
+
+        private void AddTab( VisualElement cheatTabView, String tabName, VisualElement tabRoot )
+        {
+            var tabBtnContainer = cheatTabView.Q<VisualElement>( "TabsScroll" );
+            var tabBtn = new Button( );
+            tabBtn.AddToClassList( "CheatBtn" );
+            tabBtnContainer.Add( tabBtn );
+            tabBtn.text    =  tabName;
+            var container = cheatTabView.Q<VisualElement>( "Content" );
+            tabBtn.clicked += () => { TabBtnOnclicked( tabBtnContainer, tabBtn, container, tabRoot ); };
+            TabBtnOnclicked( tabBtnContainer, tabBtn, container, tabRoot );
+        }
+
+        private void TabBtnOnclicked( VisualElement tabButtonsContainer, Button pressedButton, VisualElement tabPageContainer, VisualElement tabPage )
+        {
+            foreach ( var tabButton in tabButtonsContainer.Children() )
+            {
+                tabButton.EnableInClassList( "CheatBtn--pressed", tabButton == pressedButton );
+            }
+            tabPageContainer.Clear();
+            tabPageContainer.Add( tabPage );
         }
 
         private void ExpandSysInfoOnClicked( Label deviceInfoLabel, Button expandSysInfoBtn )
@@ -110,6 +165,11 @@ namespace Silentor.CheatPanel
                 deviceInfoLabel.text          = GetDeviceAndAppInfo();
             }
             
+        }
+
+        private string GetFPSStats( )
+        {
+            return $"FPS {_fpsMeter.AverageFPS}, min {_fpsMeter.SlowestFPS}";
         }
 
         private string GetDeviceAndAppInfo( )

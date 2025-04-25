@@ -1,4 +1,13 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
-    <ui:TabView name="CheatTabView" class="TabView" />
+    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
+    <ui:VisualElement name="CheatTabView" class="TabView" style="flex-grow: 1;">
+        <ui:VisualElement name="Header" style="flex-grow: 1; flex-direction: row; height: 18px; min-height: 18px; max-height: 18px;">
+            <ui:ScrollView name="TabsScroll" vertical-scroller-visibility="Hidden" mode="Horizontal" style="flex-grow: 1; flex-direction: row;" />
+            <ui:VisualElement name="ToolBar" style="flex-direction: row;">
+                <ui:Button text="☼" name="Skin" class="CheatBtn" />
+                <ui:Button text="-" name="MinimizeBtn" class="CheatBtn" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="Content" style="flex-grow: 1;" />
+    </ui:VisualElement>
 </ui:UXML>
