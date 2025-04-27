@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using Object = System.Object;
@@ -8,13 +9,13 @@ namespace Silentor.CheatPanel
     public class FpsMeter
     {
         public float AverageFrameTime => _averageFrame;
-        public int   AverageFPS => _averageFrame > 0 ? (int)(1 / _averageFrame) : 0;
+        public int   AverageFPS => _averageFrame > 0 ? (int)Math.Round(1 / _averageFrame) : 0;
         public float SlowestFrameTime => _slowestFrame;
-        public int  SlowestFPS => _slowestFrame > 0 ? (int)(1 / _slowestFrame) : 0;
+        public int  SlowestFPS => _slowestFrame > 0 ? (int)Math.Round(1 / _slowestFrame) : 0;
 
         public void StartMeter( )
         {
-            _measureTime = Time.timeAsDouble;
+            _measureTime = Time.unscaledTime;
             _cancel      = new CancellationTokenSource();
             Update( _cancel.Token );
         }
@@ -49,7 +50,7 @@ namespace Silentor.CheatPanel
                     _slowestFrame = slowestFrame;
                 }
 
-                var dt = Time.deltaTime;
+                var dt = Time.unscaledDeltaTime;
                 _deltaTimes.Add( dt );
                 _measureTime += dt;
 
@@ -57,7 +58,7 @@ namespace Silentor.CheatPanel
             }
         }
 
-        private          double                  _measureTime;
+        private          float                  _measureTime;
         private float _slowestFrame;
         private float _averageFrame;
         private          CancellationTokenSource _cancel;
