@@ -231,7 +231,7 @@ namespace Silentor.CheatPanel
             {
                 if ( Cheat.IsValidCheat( member ) )
                 {
-                    var cheat           = new Cheat( cheats, member );
+                    var cheat           = new Cheat( cheats, member, destroyCancellationToken );
                     var tabNameForCheat = cheat.TabName ?? defaultTabName;
                     var tab             = GetOrCreateTab( tabView, tabNameForCheat );
                     tab.Add( cheat );

@@ -398,9 +398,9 @@ MonoBehaviour:
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_PanelSettings: {fileID: 11400000, guid: 560410172997c6a4fb525e62f6025e9c, type: 2}
+  m_PanelSettings: {fileID: 11400000, guid: 10ab628ee7f49fa4c9ebfca368817234, type: 2}
   m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: fd97555f7aa51764d8e41f7f7006c5d3, type: 3}
+  sourceAsset: {fileID: 9197481963319205126, guid: a7fdbb03937069144b416177c3222feb, type: 3}
   m_SortingOrder: 0
   m_WorldSpaceSizeMode: 1
   m_WorldSpaceWidth: 1920
@@ -432,9 +432,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78c657b683116ab49ae5d4b79905b4d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CheatPanelMaximized: {fileID: 9197481963319205126, guid: 24b02a16a4ca99546a5d5db7827d8100, type: 3}
-  CheatPanelMinimized: {fileID: 9197481963319205126, guid: fd97555f7aa51764d8e41f7f7006c5d3, type: 3}
-  SystemTab: {fileID: 9197481963319205126, guid: a7fdbb03937069144b416177c3222feb, type: 3}
 --- !u!1 &1877568405
 GameObject:
   m_ObjectHideFlags: 0

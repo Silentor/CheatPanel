@@ -7,7 +7,6 @@
     margin-left: 1px;
     padding-right: 1px;
     padding-left: 1px;
-    font-size: 10px;
 }
 
 .CheatBtn {
@@ -21,14 +20,12 @@
     padding-left: 1px;
     flex-shrink: 1;
     flex-grow: 0;
-    min-width: 16px;
-    font-size: 10px;
-    max-height: 16px;
+    min-width: 20px;
 }
 
-.CheatBtn--pressed{
+.CheatBtn--pressed {
     background-color: var(--unity-colors-button-background-pressed);
-    border-color:  var(--unity-colors-button-border-pressed);
+    border-color: var(--unity-colors-button-border-pressed);
 }
 
 .CheatLine {
@@ -39,17 +36,53 @@
 
 .TabView {
     background-color: rgba(0, 0, 0, 0.2);
-    font-size: 10px;
+    padding-top: 2px;
+    padding-right: 2px;
+    padding-bottom: 2px;
+    padding-left: 2px;
+}
+
+.TabView__ToolBtn {
+    min-height: 20px;
+    max-height: 20px;
+    min-width: 20px;
+    max-width: 20px;
+    margin-top: 1px;
+    margin-right: 1px;
+    margin-bottom: 1px;
+    margin-left: 1px;
+    padding-top: 1px;
+    padding-right: 1px;
+    padding-bottom: 1px;
+    padding-left: 1px;
+}
+
+.TabView__Header {
+    flex-grow: 1;
+    flex-direction: row;
+    min-height: 22px;
+    max-height: 22px;
 }
 
 .Tab {
-    font-size: 10px;
 }
 
 .Text {
-    font-size: 10px;
 }
 
 .ToolBtn {
     max-height: 20px;
+}
+
+.unity-base-slider__dragger {
+    max-height: 16px;
+    max-width: 12px;
+    min-width: 12px;
+    min-height: 16px;
+    margin-top: -8px;
+    height: 16px;
+}
+
+.unity-base-slider--horizontal {
+    min-height: 18px;
 }

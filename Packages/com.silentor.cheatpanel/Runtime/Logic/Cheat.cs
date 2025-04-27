@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Silentor.CheatPanel
@@ -13,13 +15,15 @@ namespace Silentor.CheatPanel
         public readonly String TabName;
         public readonly String GroupName;
         
-        public readonly ICheats       CheatObject;
-        public readonly MemberInfo    MemberInfo;
+        public readonly  ICheats           CheatObject;
+        public readonly  MemberInfo        MemberInfo;
+        
 
-        public Cheat(ICheats cheatObject, MemberInfo memberInfo )
+        public Cheat(ICheats cheatObject, MemberInfo memberInfo, CancellationToken cancel )
         {
-            CheatObject = cheatObject;
-            MemberInfo  = memberInfo;
+            CheatObject  = cheatObject;
+            MemberInfo   = memberInfo;
+            _cancel = cancel;
             var cheatAttribute = memberInfo.GetCustomAttribute<CheatAttribute>( );
             if ( cheatAttribute != null )
             {
@@ -52,12 +56,21 @@ namespace Silentor.CheatPanel
                         return true;
                     }
                 }
+                else if ( memberInfo is PropertyInfo propertyInfo &&
+                          ( propertyInfo.GetMethod.IsPublic || propertyInfo.GetCustomAttribute<CheatAttribute>() != null ) )
+                {
+                    if( propertyInfo.PropertyType.IsPrimitive )
+                    {
+                        return true;
+                    }
+                }
             }
 
             return false;
         }
 
-        private         VisualElement _ui;
+        private          VisualElement     _ui;
+        private readonly CancellationToken _cancel;
 
         private VisualElement GenerateUI( )
         {
@@ -85,8 +98,38 @@ namespace Silentor.CheatPanel
 
                 return cheatBtn;
             }
+            else if ( MemberInfo is PropertyInfo cheatProp )
+            {
+                var propType = cheatProp.PropertyType;
+                if ( propType == typeof(bool) )
+                {
+                    var toggle = new Toggle( );
+                    toggle.AddToClassList( "CheatToggle" );
+                    toggle.text = cheatName;
+                    toggle.value = (bool)cheatProp.GetValue( CheatObject, null );
+
+                    toggle.RegisterValueChangedCallback( evt =>
+                    {
+                        cheatProp.SetValue( CheatObject, evt.newValue, null );
+                    } );
+
+                    //Property cheats value should be refreshed if changed externally
+                    RefreshCheatValue( () => toggle.value = (bool)cheatProp.GetValue( CheatObject, null ), _cancel );
+
+                    return toggle;
+                }
+            }
 
             throw new NotImplementedException( $"Cheat {Name} is not a method" );
+        }
+
+        private async Awaitable RefreshCheatValue( Action refreshCheatLogic, CancellationToken cancel )
+        {
+            while ( !cancel.IsCancellationRequested )
+            {
+                refreshCheatLogic();
+                await Awaitable.WaitForSecondsAsync( 1000, cancel );
+            }
         }
     }
 }

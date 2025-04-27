@@ -1,0 +1,41 @@
+.cheat-group__delim {
+    border-bottom-color: var(--unity-colors-box-border);
+    border-bottom-width: 1px;
+    flex-grow: 1;
+    margin-bottom: 8px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.cheat-group__header {
+    flex-direction: row;
+    max-height: 16px;
+    min-height: 16px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.cheat-group__caption {
+    -unity-text-align: middle-left;
+    margin-top: 1px;
+    margin-right: 5px;
+    margin-bottom: 1px;
+    margin-left: 5px;
+    padding-top: 1px;
+    padding-right: 1px;
+    padding-bottom: 1px;
+    padding-left: 1px;
+}
+
+.cheat-group__content {
+    flex-grow: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.cheat-group__delim--left {
+    max-width: 20px;
+}
+
+.TabView__ToolBtn {
+}

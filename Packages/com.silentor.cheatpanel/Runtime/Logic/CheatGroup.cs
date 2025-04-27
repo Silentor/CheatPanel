@@ -38,26 +38,23 @@ namespace Silentor.CheatPanel
             if( Cheats.Count == 0 )
                 return new VisualElement();
 
-            VisualElement group = Resources.CheatGroup.Instantiate();
-            var caption = group.Q<Label>( "CaptionLbl" );
-            if ( Name == null )     //Unnamed group, no name
+            var group = new CheatGroupControl( Name );
+            var content = group.Content;
+            if ( Name == null )     //Unnamed group, no caption
             {
-                caption.text = String.Empty;
                 foreach ( var cheat in Cheats )
                 {
-                    group.Add( cheat.GetUI() );
+                    content.Add( cheat.GetUI() );
                 }
             }
             else
             {
-                caption.text = Name;
                 foreach ( var cheat in Cheats )
                 {
-                    group.Add( cheat.GetUI() );
+                    content.Add( cheat.GetUI() );
                 }
             }
 
-            group.AddToClassList( "CheatGroup" );
             return group;
         }
     }
