@@ -227,14 +227,19 @@ namespace Silentor.CheatPanel
                 defaultTabName = defaultTabName[ ..^6 ];
 
             var members = cheats.GetType().GetMembers( BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic );
+            Debug.Log($"Processing cheats from {cheats.GetType().Name}, members count: {members.Length}");
             foreach ( var member in members )
             {
+                Debug.Log(member.Name);
+
                 if ( Cheat.IsValidCheat( member ) )
                 {
                     var cheat           = new Cheat( cheats, member, destroyCancellationToken );
                     var tabNameForCheat = cheat.TabName ?? defaultTabName;
                     var tab             = GetOrCreateTab( tabView, tabNameForCheat );
                     tab.Add( cheat );
+                    
+                    
                 }
             }
         }

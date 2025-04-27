@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 namespace Silentor.CheatPanel
 {
+    [Preserve]
+    [RequireAttributeUsages]
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
     public class CheatAttribute : Attribute
     {

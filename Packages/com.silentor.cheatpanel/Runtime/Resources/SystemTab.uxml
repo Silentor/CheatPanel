@@ -9,7 +9,7 @@
             </ui:VisualElement>
             <ui:Label name="DeviceInfoValue" class="CheatLabel" style="white-space: normal;" />
         </ui:VisualElement>
-        <ui:VisualElement name="TimeScale" style="flex-direction: row;">
+        <ui:VisualElement name="TimeScale" class="CheatLine">
             <ui:Label text="TimeScale: 0.5" name="TimeScaleLbl" class="CheatLabel" style="max-width: 95px; min-width: 95px;" />
             <ui:Slider value="1" high-value="2" name="TimeScaleSlider" style="flex-grow: 1;" />
             <ui:Button text="0" name="TS_0" class="CheatBtn" />
@@ -17,8 +17,8 @@
             <ui:Button text="1" name="TS_1" class="CheatBtn" />
         </ui:VisualElement>
         <ui:VisualElement name="FPS" style="flex-direction: column;">
-            <ui:Label text="FPS stats" name="FPSStatsLbl" class="CheatLabel" />
-            <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+            <ui:Label text="FPS stats" name="FPSStatsLbl" class="CheatLabel CheatLine" />
+            <ui:VisualElement class="CheatLine">
                 <ui:Label text="FPS 30" name="TargetFPS" class="CheatLabel" style="min-width: 45px;" />
                 <ui:Slider value="30" high-value="60" name="FPSSlider" low-value="10" fill="false" style="flex-grow: 1;" />
                 <ui:Button text="X" name="FPS_X" class="CheatBtn" />

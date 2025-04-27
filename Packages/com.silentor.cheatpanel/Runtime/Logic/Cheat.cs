@@ -48,7 +48,7 @@ namespace Silentor.CheatPanel
         {
             if ( typeof(ICheats).IsAssignableFrom( memberInfo.DeclaringType ) )
             {
-                if ( memberInfo is MethodInfo methodInfo && (methodInfo.IsPublic || methodInfo.GetCustomAttribute<CheatAttribute>() != null ) )
+                if ( memberInfo is MethodInfo methodInfo && !methodInfo.IsSpecialName && (methodInfo.IsPublic || methodInfo.GetCustomAttribute<CheatAttribute>() != null ) )
                 {
                     var parameters = methodInfo.GetParameters( );
                     if ( parameters.Length == 0 )
@@ -105,6 +105,7 @@ namespace Silentor.CheatPanel
                 {
                     var toggle = new Toggle( );
                     toggle.AddToClassList( "CheatToggle" );
+                    toggle.AddToClassList( "CheatLine" );
                     toggle.text = cheatName;
                     toggle.value = (bool)cheatProp.GetValue( CheatObject, null );
 
@@ -118,6 +119,40 @@ namespace Silentor.CheatPanel
 
                     return toggle;
                 }
+                else if ( propType == typeof(float) )
+                {
+                    var rangeAttr = cheatProp.GetCustomAttribute<RangeAttribute>( );
+                    if ( rangeAttr != null )
+                    {
+                        var field = new Slider( cheatName, rangeAttr.min, rangeAttr.max );
+                        field.AddToClassList( "CheatLine" );
+                        field.AddToClassList( "CheatSlider" );
+                        field.SetValueWithoutNotify( (float)cheatProp.GetValue( CheatObject, null ));
+                        field.RegisterValueChangedCallback( evt =>
+                        {
+                            cheatProp.SetValue( CheatObject, evt.newValue, null );
+                        } );
+                        //Property cheats value should be refreshed if changed externally
+                        RefreshCheatValue( () => field.SetValueWithoutNotify( (float)cheatProp.GetValue( CheatObject, null )), _cancel );
+                        return field;
+                    }
+                    else
+                    {
+                        var field = new FloatField( cheatName );
+                        field.AddToClassList( "CheatLine" );
+                        field.AddToClassList( "CheatTextBox" );
+                        field.SetValueWithoutNotify( (float)cheatProp.GetValue( CheatObject, null ));
+
+                        field.RegisterValueChangedCallback( evt =>
+                        {
+                            cheatProp.SetValue( CheatObject, evt.newValue, null );
+                        } );
+
+                        //Property cheats value should be refreshed if changed externally
+                        RefreshCheatValue( () => field.SetValueWithoutNotify( (float)cheatProp.GetValue( CheatObject, null )), _cancel );
+                        return field;
+                    }
+                }
             }
 
             throw new NotImplementedException( $"Cheat {Name} is not a method" );
@@ -128,7 +163,7 @@ namespace Silentor.CheatPanel
             while ( !cancel.IsCancellationRequested )
             {
                 refreshCheatLogic();
-                await Awaitable.WaitForSecondsAsync( 1000, cancel );
+                await Awaitable.WaitForSecondsAsync( 1f, cancel );
             }
         }
     }

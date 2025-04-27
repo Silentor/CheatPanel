@@ -829,7 +829,7 @@ PlayerSettings:
     Android: 1
   il2cppStacktraceInformation: {}
   managedStrippingLevel:
-    Android: 3
+    Android: 4
     Standalone: 3
   incrementalIl2cppBuild: {}
   suppressCommonWarnings: 1
