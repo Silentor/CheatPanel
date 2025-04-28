@@ -227,10 +227,10 @@ namespace Silentor.CheatPanel
                 defaultTabName = defaultTabName[ ..^6 ];
 
             var members = cheats.GetType().GetMembers( BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic );
-            Debug.Log($"Processing cheats from {cheats.GetType().Name}, members count: {members.Length}");
+            //Debug.Log($"Processing cheats from {cheats.GetType().Name}, members count: {members.Length}");
             foreach ( var member in members )
             {
-                Debug.Log(member.Name);
+                //Debug.Log(member.Name);
 
                 if ( Cheat.IsValidCheat( member ) )
                 {

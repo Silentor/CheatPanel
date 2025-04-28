@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = System.Object;
 
 namespace Silentor.CheatPanel
 {
@@ -17,7 +18,6 @@ namespace Silentor.CheatPanel
         
         public readonly  ICheats           CheatObject;
         public readonly  MemberInfo        MemberInfo;
-        
 
         public Cheat(ICheats cheatObject, MemberInfo memberInfo, CancellationToken cancel )
         {
@@ -57,9 +57,9 @@ namespace Silentor.CheatPanel
                     }
                 }
                 else if ( memberInfo is PropertyInfo propertyInfo &&
-                          ( propertyInfo.GetMethod.IsPublic || propertyInfo.GetCustomAttribute<CheatAttribute>() != null ) )
+                          ( (propertyInfo.GetGetMethod() != null || propertyInfo.GetSetMethod() != null) || propertyInfo.GetCustomAttribute<CheatAttribute>() != null ))
                 {
-                    if( propertyInfo.PropertyType.IsPrimitive )
+                    if( propertyInfo.PropertyType.IsPrimitive || propertyInfo.PropertyType == typeof( string ) )
                     {
                         return true;
                     }
@@ -71,6 +71,8 @@ namespace Silentor.CheatPanel
 
         private          VisualElement     _ui;
         private readonly CancellationToken _cancel;
+        private          PropertyInfo      _cheatProp;
+        private          bool              _isRefreshFieldExceptionReported;
 
         private VisualElement GenerateUI( )
         {
@@ -100,71 +102,138 @@ namespace Silentor.CheatPanel
             }
             else if ( MemberInfo is PropertyInfo cheatProp )
             {
+                _cheatProp = cheatProp;
                 var propType = cheatProp.PropertyType;
                 if ( propType == typeof(bool) )
                 {
-                    var toggle = new Toggle( );
-                    toggle.AddToClassList( "CheatToggle" );
-                    toggle.AddToClassList( "CheatLine" );
-                    toggle.text = cheatName;
-                    toggle.value = (bool)cheatProp.GetValue( CheatObject, null );
+                    var field = new Toggle( cheatName );
+                    field.AddToClassList( "CheatToggle" );
+                    field.AddToClassList( "CheatLine" );
 
-                    toggle.RegisterValueChangedCallback( evt =>
-                    {
-                        cheatProp.SetValue( CheatObject, evt.newValue, null );
-                    } );
+                    if ( cheatProp.CanWrite )                        
+                        field.RegisterValueChangedCallback( evt => UpdateProperty( evt.newValue ) );
+                    else
+                        field.SetEnabled( false );
 
-                    //Property cheats value should be refreshed if changed externally
-                    RefreshCheatValue( () => toggle.value = (bool)cheatProp.GetValue( CheatObject, null ), _cancel );
+                    if ( cheatProp.CanRead ) //Property cheats value should be refreshed if changed externally
+                        RefreshFieldValue( () => field.SetValueWithoutNotify( (bool)cheatProp.GetValue( CheatObject, null )), _cancel );
 
-                    return toggle;
+                    return field;
                 }
-                else if ( propType == typeof(float) )
+                else if ( propType.IsPrimitive || propType == typeof(string))
                 {
-                    var rangeAttr = cheatProp.GetCustomAttribute<RangeAttribute>( );
-                    if ( rangeAttr != null )
+                    var              rangeAttr = cheatProp.GetCustomAttribute<RangeAttribute>( );
+                    if( rangeAttr != null )
                     {
-                        var field = new Slider( cheatName, rangeAttr.min, rangeAttr.max );
-                        field.AddToClassList( "CheatLine" );
-                        field.AddToClassList( "CheatSlider" );
-                        field.SetValueWithoutNotify( (float)cheatProp.GetValue( CheatObject, null ));
-                        field.RegisterValueChangedCallback( evt =>
-                        {
-                            cheatProp.SetValue( CheatObject, evt.newValue, null );
-                        } );
-                        //Property cheats value should be refreshed if changed externally
-                        RefreshCheatValue( () => field.SetValueWithoutNotify( (float)cheatProp.GetValue( CheatObject, null )), _cancel );
-                        return field;
+                        return null;
                     }
                     else
                     {
-                        var field = new FloatField( cheatName );
-                        field.AddToClassList( "CheatLine" );
-                        field.AddToClassList( "CheatTextBox" );
-                        field.SetValueWithoutNotify( (float)cheatProp.GetValue( CheatObject, null ));
-
-                        field.RegisterValueChangedCallback( evt =>
-                        {
-                            cheatProp.SetValue( CheatObject, evt.newValue, null );
-                        } );
-
-                        //Property cheats value should be refreshed if changed externally
-                        RefreshCheatValue( () => field.SetValueWithoutNotify( (float)cheatProp.GetValue( CheatObject, null )), _cancel );
-                        return field;
+                        return GenerateValueField( cheatName, cheatProp );
                     }
                 }
             }
 
-            throw new NotImplementedException( $"Cheat {Name} is not a method" );
+            throw new NotImplementedException( $"Cheat {Name} type {MemberInfo} is not supported" );
         }
 
-        private async Awaitable RefreshCheatValue( Action refreshCheatLogic, CancellationToken cancel )
+        private void UpdateProperty( System.Object newValue )
+        {
+            _cheatProp.SetValue( CheatObject, newValue, null );
+        }
+
+        private async Awaitable RefreshFieldValue( Action refreshCheatLogic, CancellationToken cancel )
         {
             while ( !cancel.IsCancellationRequested )
             {
-                refreshCheatLogic();
+                try
+                {
+                    refreshCheatLogic();
+                    _isRefreshFieldExceptionReported = false;
+                }
+                catch ( Exception e )
+                {
+                    if( !_isRefreshFieldExceptionReported )
+                    {
+                        _isRefreshFieldExceptionReported = true;
+                        Debug.LogError( $"Cheat {Name} refresh field exception: {e.Message}" );
+                    }
+                }
+                
                 await Awaitable.WaitForSecondsAsync( 1f, cancel );
             }
+        }
+
+        private VisualElement GenerateValueField( String cheatName, PropertyInfo cheatProp )
+        {
+            if( cheatProp.PropertyType == typeof(float) )
+                return PrepareTextValueField( new FloatField( cheatName ) );
+            else if( cheatProp.PropertyType == typeof(int) )
+                return PrepareTextValueField( new IntegerField( cheatName ) );
+            else if( cheatProp.PropertyType == typeof(double) )
+                return PrepareTextValueField( new DoubleField( cheatName ) );
+            else if( cheatProp.PropertyType == typeof(uint) )
+                return PrepareTextValueField( new UnsignedIntegerField( cheatName ) );
+            else if( cheatProp.PropertyType == typeof(long) )
+                return PrepareTextValueField( new LongField( cheatName ) );
+            else if( cheatProp.PropertyType == typeof(ulong) )
+                return PrepareTextValueField( new UnsignedLongField( cheatName ) );
+            else if( cheatProp.PropertyType == typeof(byte) )
+                return PrepareSubIntegerField<byte>( new IntegerField( cheatName ), Byte.MinValue, Byte.MaxValue );
+            else if( cheatProp.PropertyType == typeof(sbyte) )
+                return PrepareSubIntegerField<sbyte>( new IntegerField( cheatName ), SByte.MinValue, SByte.MaxValue );
+            else if( cheatProp.PropertyType == typeof(short) )
+                return PrepareSubIntegerField<short>( new IntegerField( cheatName ), Int16.MinValue, Int16.MaxValue );
+            else if( cheatProp.PropertyType == typeof(ushort) )
+                return PrepareSubIntegerField<ushort>( new IntegerField( cheatName ), UInt16.MinValue, UInt16.MaxValue );
+            else if( cheatProp.PropertyType == typeof(string) )
+                return PrepareTextValueField( new TextField( cheatName ) );
+
+            return null;
+            
+            TextInputBaseField<T> PrepareTextValueField<T>( TextInputBaseField<T> field )
+            {
+                field.AddToClassList( "CheatTextBox" );
+                field.AddToClassList( "CheatLine" );
+                field.isDelayed = true;
+                field.RegisterCallback<FocusInEvent>( FieldFocusIn );
+                field.RegisterCallback<FocusOutEvent>( FieldFocusOut );
+                if ( cheatProp.CanWrite )                        
+                    field.RegisterValueChangedCallback( evt => UpdateProperty( evt.newValue ) );
+                else
+                    field.SetEnabled( false );
+
+                if ( cheatProp.CanRead ) //Property cheats value should be refreshed if changed externally
+                    RefreshFieldValue( () => field.SetValueWithoutNotify( (T)cheatProp.GetValue( CheatObject, null )), _cancel );
+
+                return field;
+            }
+
+            IntegerField PrepareSubIntegerField<T>( IntegerField field, int min, int max )
+            {
+                field.AddToClassList( "CheatTextBox" );
+                field.AddToClassList( "CheatLine" );
+                field.isDelayed = true;
+                if ( cheatProp.CanWrite )                        
+                    field.RegisterValueChangedCallback( evt => UpdateProperty( Convert.ChangeType(Math.Clamp(evt.newValue, min, max), typeof(T)) ) );
+                else
+                    field.SetEnabled( false );
+
+                if ( cheatProp.CanRead ) //Property cheats value should be refreshed if changed externally
+                    RefreshFieldValue( () => field.SetValueWithoutNotify( Convert.ToInt32( cheatProp.GetValue( CheatObject, null ))), _cancel );
+
+                return field;
+            }
+        }
+
+        private void FieldFocusIn( FocusInEvent evt )
+        {
+            Debug.Log( $"{Name} has focus" );
+        }
+
+        private void FieldFocusOut( FocusOutEvent focusOutEvent )
+        {
+            Debug.Log( $"{Name} no focus" );
         }
     }
 }

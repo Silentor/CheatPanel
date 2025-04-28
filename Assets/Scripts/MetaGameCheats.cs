@@ -1,12 +1,16 @@
+using System;
 using UnityEngine;
 using UnityEngine.Scripting;
+using Object = System.Object;
 
 namespace Silentor.CheatPanel.DevProject
 {
     public class MetaGameCheats : ICheats
     {
-        private bool _isImmortal; 
+        private bool  _isImmortal; 
         private float _playerSpeed = 5.55f; 
+        private int   _hp          = 100;
+        private string _name = "MyName";
 
         // [Cheat("Player")]
         // public void Kill( )
@@ -55,6 +59,55 @@ namespace Silentor.CheatPanel.DevProject
             get => _playerSpeed;
             set => _playerSpeed = value;
         }
+
+        [Cheat("Player")]
+        public float SpeedRO
+        {
+            get => _playerSpeed;
+        }
+
+        [Cheat("Player")]
+        public float SpeedWO
+        {
+            set => _playerSpeed = value;            //Because why not
+        }
+
+        [Cheat("Player")]
+        public double SpeedDouble
+        {
+            get => _playerSpeed;
+            set => _playerSpeed = (float)value;
+        }
+
+        [Cheat("Player")]
+        public Byte HP_Byte
+        {
+            get => (byte)_hp;
+            set => _hp = value;
+        }
+
+        [Cheat("Player")]
+        public short HP_short
+        {
+            get => (short)_hp;
+            set => _hp = value;
+        }
+
+        [Cheat("Player")]
+        public string Name
+        {
+            get => _name;
+            set => _name = value;
+        }
+
+        [Cheat("Player")]
+        public ulong Money
+        {
+            get => (ulong)_hp;
+            set => _hp = (int)value;
+        }
+
+
 
         // public void DoThird2( )
         // {
