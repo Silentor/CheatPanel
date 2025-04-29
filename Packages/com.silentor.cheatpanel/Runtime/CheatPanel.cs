@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = System.Object;
@@ -19,10 +20,11 @@ namespace Silentor.CheatPanel
         /// <param name="cheats"></param>
         public void AddCheats( ICheats cheats )
         {
-            var tabView = _doc.rootVisualElement.Q<VisualElement>( "CheatTabView" );
-            AddCheats( tabView, cheats );
-            var contentContainer = tabView.Q<VisualElement>( "Content" );
-            SelectTab( contentContainer, _selectedTab );//Redraw current tab in case of new cheats added to it
+            AddCheatsInternal( cheats );
+            if( _settings.IsMaximized )
+            {
+                ShowPanel();
+            }
         } 
 
         private          UIDocument     _doc;
@@ -220,7 +222,7 @@ namespace Silentor.CheatPanel
             return String.Empty;
         }
 
-        private void AddCheats( VisualElement tabView, ICheats cheats )
+        private void AddCheatsInternal( ICheats cheats )
         {
             var defaultTabName = cheats.GetType().Name;
             if( defaultTabName.EndsWith( "Cheats", StringComparison.InvariantCultureIgnoreCase ) )
@@ -236,21 +238,20 @@ namespace Silentor.CheatPanel
                 {
                     var cheat           = new Cheat( cheats, member, destroyCancellationToken );
                     var tabNameForCheat = cheat.TabName ?? defaultTabName;
-                    var tab             = GetOrCreateTab( tabView, tabNameForCheat );
+                    var tab             = GetOrCreateTab( tabNameForCheat );
                     tab.Add( cheat );
-                    
-                    
                 }
             }
         }
 
-        private CheatTab GetOrCreateTab( VisualElement tabView, String tabName)
+        private CheatTab GetOrCreateTab( String tabName)
         {
+            if( String.IsNullOrEmpty( tabName ) ) throw new ArgumentNullException( nameof(tabName) );
+
             var tab = _tabs.FirstOrDefault( t => t.Name == tabName );
             if ( tab == null )
             {
                 tab = new CheatTab( tabName );
-                AddTab( tabView, tab );
                 _tabs.Add( tab );
             }
 

@@ -36,7 +36,7 @@ namespace Silentor.CheatPanel
 
         public          VisualElement GetUI()
         {
-            return _ui ??= GenerateUI( );
+            return _ui ??= GenerateUI( ) ?? new VisualElement();
         }
 
         public void InvalidateUI( )
@@ -125,7 +125,7 @@ namespace Silentor.CheatPanel
                     var              rangeAttr = cheatProp.GetCustomAttribute<RangeAttribute>( );
                     if( rangeAttr != null )
                     {
-                        return null;
+                        return GenerateSliderField( cheatName, cheatProp, rangeAttr );
                     }
                     else
                     {
@@ -156,7 +156,10 @@ namespace Silentor.CheatPanel
                     if( !_isRefreshFieldExceptionReported )
                     {
                         _isRefreshFieldExceptionReported = true;
-                        Debug.LogError( $"Cheat {Name} refresh field exception: {e.Message}" );
+                        if( _cheatProp != null )
+                            Debug.LogError( $"Cheat {Name} prop ({_cheatProp}) = {_cheatProp.GetValue( CheatObject, null )} refresh field exception: {e.Message}" );
+                        else
+                            Debug.LogError( $"Cheat {Name} refresh field exception: {e.Message}" );
                     }
                 }
                 
@@ -164,6 +167,41 @@ namespace Silentor.CheatPanel
             }
         }
 
+        private VisualElement GenerateSliderField( String cheatName, PropertyInfo cheatProp, RangeAttribute range )
+        {
+            if( cheatProp.PropertyType == typeof(int) || cheatProp.PropertyType == typeof(uint)
+               || cheatProp.PropertyType == typeof(long)  || cheatProp.PropertyType == typeof(ulong)
+               || cheatProp.PropertyType == typeof(byte)  || cheatProp.PropertyType == typeof(sbyte)
+               || cheatProp.PropertyType == typeof(short) || cheatProp.PropertyType == typeof(ushort) )
+            {
+                var field = new SliderInt( cheatName, (int)range.min, (int)range.max );
+                field.AddToClassList( "CheatSlider" );
+                field.AddToClassList( "CheatLine" );
+                if ( cheatProp.CanWrite )                        
+                    field.RegisterValueChangedCallback( evt => UpdateProperty( Convert.ChangeType(evt.newValue, cheatProp.PropertyType) ) );
+                else
+                    field.SetEnabled( false );
+                if ( cheatProp.CanRead ) //Property cheats value should be refreshed if changed externally
+                    RefreshFieldValue( () => field.SetValueWithoutNotify( Convert.ToInt32(cheatProp.GetValue( CheatObject, null ))), _cancel );
+                return field;
+            }
+            else if( cheatProp.PropertyType == typeof(float) || cheatProp.PropertyType == typeof(double) )
+            {
+                var field = new Slider( cheatName, range.min, range.max );
+                field.AddToClassList( "CheatSlider" );
+                field.AddToClassList( "CheatLine" );
+                if ( cheatProp.CanWrite )                        
+                    field.RegisterValueChangedCallback( evt => UpdateProperty( evt.newValue ) );
+                else
+                    field.SetEnabled( false );
+                if ( cheatProp.CanRead ) //Property cheats value should be refreshed if changed externally
+                    RefreshFieldValue( () => field.SetValueWithoutNotify( Convert.ToSingle( cheatProp.GetValue( CheatObject, null ))), _cancel );
+                return field;
+            }
+
+            return null;
+        }
+        
         private VisualElement GenerateValueField( String cheatName, PropertyInfo cheatProp )
         {
             if( cheatProp.PropertyType == typeof(float) )

@@ -40,7 +40,7 @@
 .CheatSlider {
 }
 
-.CheatSlider > .unity-slider__input{
+.CheatSlider > .unity-base-slider__input{
     min-width: 100px;
 }
 

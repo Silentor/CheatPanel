@@ -23,37 +23,28 @@ namespace Silentor.CheatPanel
         public void Add( Cheat cheat )
         {
             Assert.IsTrue( cheat.TabName == null || cheat.TabName == Name );
+
+            CheatGroup group = null;
             if ( cheat.GroupName == null )
             {
-                CheatGroup group;
-
                 if ( CheatsGroups.Any() && CheatsGroups.Last().Name == null )
                 {
                     group = CheatsGroups.Last();
                 }
-                else
-                {
-                    group = new CheatGroup( null );
-                    CheatsGroups.Add( group );
-                }
-
-                group.Cheats.Add( cheat );
-                group.InvalidateUI();
-                InvalidateUI();
             }
             else
             {
-                var group = CheatsGroups.FirstOrDefault( g => g.Name == cheat.GroupName );
-                if ( group == null )
-                {
-                    group = new CheatGroup( cheat.GroupName );
-                    CheatsGroups.Add( group );
-                }
+                group = CheatsGroups.FirstOrDefault( g => g.Name == cheat.GroupName );
+            }
 
-                group.Cheats.Add( cheat );
-                group.InvalidateUI();
+            if( group == null )
+            {
+                group = new CheatGroup( cheat.GroupName );
+                CheatsGroups.Add( group );
                 InvalidateUI();
             }
+
+            group.AddCheat( cheat );
         }
 
         public VisualElement GetUI( )
@@ -61,7 +52,7 @@ namespace Silentor.CheatPanel
             return _contentUI ??= GenerateContentUI();
         }
 
-        public void InvalidateUI( )
+        private void InvalidateUI( )
         {
             _contentUI = null;
         }

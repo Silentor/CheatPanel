@@ -8,20 +8,24 @@ namespace Silentor.CheatPanel
     {
         public readonly string        Name;
         public readonly List<Cheat>   Cheats = new();
-        public          VisualElement UI;                    //Cached UI
 
         public CheatGroup(String name )
         {
             Name = name;
         }
 
+        public void AddCheat( Cheat cheat )
+        {
+            Cheats.Add( cheat );
+            InvalidateUI( );
+        }
 
         public VisualElement GetUI( )
         {
             return _cachedUI ??= GenerateUI( );
         }
 
-        public void InvalidateUI( )
+        private void InvalidateUI( )
         {
             _cachedUI = null;
         }
