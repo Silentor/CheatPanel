@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 using Object = System.Object;
 
@@ -48,20 +49,25 @@ namespace Silentor.CheatPanel
         {
             if ( typeof(ICheats).IsAssignableFrom( memberInfo.DeclaringType ) )
             {
-                if ( memberInfo is MethodInfo methodInfo && !methodInfo.IsSpecialName && (methodInfo.IsPublic || methodInfo.GetCustomAttribute<CheatAttribute>() != null ) )
+                if ( memberInfo is MethodInfo methodInfo )
                 {
-                    var parameters = methodInfo.GetParameters( );
-                    if ( parameters.Length == 0 )
+                    if ( !methodInfo.IsSpecialName && (methodInfo.IsPublic || methodInfo.GetCustomAttribute<CheatAttribute>() != null ) )
                     {
-                        return true;
+                        var parameters = methodInfo.GetParameters( );
+                        if ( parameters.Length <= 1 )
+                        {
+                            return true;
+                        }
                     }
                 }
-                else if ( memberInfo is PropertyInfo propertyInfo &&
-                          ( (propertyInfo.GetGetMethod() != null || propertyInfo.GetSetMethod() != null) || propertyInfo.GetCustomAttribute<CheatAttribute>() != null ))
+                else if ( memberInfo is PropertyInfo propertyInfo)
                 {
-                    if( propertyInfo.PropertyType.IsPrimitive || propertyInfo.PropertyType == typeof( string ) )
+                    if ( (propertyInfo.GetGetMethod() != null || propertyInfo.GetSetMethod() != null) || propertyInfo.GetCustomAttribute<CheatAttribute>() != null )
                     {
-                        return true;
+                        if( propertyInfo.PropertyType.IsPrimitive || propertyInfo.PropertyType == typeof( string ) )
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -80,25 +86,42 @@ namespace Silentor.CheatPanel
 
             if ( MemberInfo is MethodInfo cheatMethod )
             {
-                var cheatBtn  = new Button( );
-                cheatBtn.AddToClassList( "CheatBtn" );
-                cheatBtn.text = cheatName;
-
-                cheatBtn.clicked += ( ) =>
+                var paramz = cheatMethod.GetParameters( );
+                if( paramz.Length == 0 )                //Simple one btn cheat
                 {
-                    var parameters = cheatMethod.GetParameters( );
-                    if ( parameters.Length == 0 )
-                    {
-                        cheatMethod.Invoke( CheatObject, null );
-                    }
-                    else
-                    {
-                        //todo add UI for parameters
-                        throw new NotImplementedException();
-                    }
-                };
+                    var cheatBtn  = new Button( );
+                    cheatBtn.AddToClassList( "CheatBtn" );
+                    cheatBtn.text = cheatName;
 
-                return cheatBtn;
+                    cheatBtn.clicked += ( ) => cheatMethod.Invoke( CheatObject, null );
+                    return cheatBtn;
+                }
+                else if( paramz.Length == 1 )           
+                {
+                    //var paramType = paramz[0].ParameterType;
+                    var paramValuesAttr = paramz[0].GetCustomAttribute<CheatValueAttribute>( );
+                    if( paramValuesAttr != null )                   //Bunch of buttons for every param value
+                    {
+                        var container = new VisualElement();
+                        container.AddToClassList( "CheatLine" );
+                        var label = new Label( cheatName );
+                        label.AddToClassList( "CheatLabel" );
+                        container.Add( label );
+                        foreach ( var paramVal in paramValuesAttr.Values )
+                        {
+                            var paramBtn = new Button( );
+                            paramBtn.AddToClassList( "CheatBtn" );
+                            paramBtn.text = paramVal.ToString();
+                            paramBtn.clicked += ( ) => cheatMethod.Invoke( CheatObject, new[] { paramVal } );
+                            container.Add( paramBtn );
+                        }
+                        return container;
+                    }
+                    else                                        //Text field for param value (similar to cheat property set only)
+                    {
+                        return GenerateValueField( cheatName, cheatMethod );
+                    }
+                }
             }
             else if ( MemberInfo is PropertyInfo cheatProp )
             {
@@ -134,7 +157,7 @@ namespace Silentor.CheatPanel
                 }
             }
 
-            throw new NotImplementedException( $"Cheat {Name} type {MemberInfo} is not supported" );
+            return null;
         }
 
         private void UpdateProperty( System.Object newValue )
@@ -201,30 +224,45 @@ namespace Silentor.CheatPanel
 
             return null;
         }
-        
+
+        private VisualElement GenerateValueField( String cheatName, MethodInfo cheatMethod_param )
+        {
+            Assert.IsTrue( cheatMethod_param.GetParameters().Length == 0 );
+            Action<Object> setter    = value => cheatMethod_param.Invoke( CheatObject, new []{value} );
+            var            paramType = cheatMethod_param.GetParameters()[0].ParameterType;
+            return GenerateValueField( cheatName, paramType, null, setter );
+        }
+
         private VisualElement GenerateValueField( String cheatName, PropertyInfo cheatProp )
         {
-            if( cheatProp.PropertyType == typeof(float) )
+            Func<Object> getter = cheatProp.CanRead ? () => cheatProp.GetValue( CheatObject, null ) : null;
+            Action<Object> setter = cheatProp.CanWrite ? (value) => cheatProp.SetValue( CheatObject, value, null ) : null;
+            return GenerateValueField( cheatName, cheatProp.PropertyType, getter, setter );
+        }
+
+        private VisualElement GenerateValueField( String cheatName, Type type, Func<Object> getValue, Action<Object> setValue )
+        {
+            if( type == typeof(float) )
                 return PrepareTextValueField( new FloatField( cheatName ) );
-            else if( cheatProp.PropertyType == typeof(int) )
+            else if( type == typeof(int) )
                 return PrepareTextValueField( new IntegerField( cheatName ) );
-            else if( cheatProp.PropertyType == typeof(double) )
+            else if( type == typeof(double) )
                 return PrepareTextValueField( new DoubleField( cheatName ) );
-            else if( cheatProp.PropertyType == typeof(uint) )
+            else if( type == typeof(uint) )
                 return PrepareTextValueField( new UnsignedIntegerField( cheatName ) );
-            else if( cheatProp.PropertyType == typeof(long) )
+            else if( type == typeof(long) )
                 return PrepareTextValueField( new LongField( cheatName ) );
-            else if( cheatProp.PropertyType == typeof(ulong) )
+            else if( type == typeof(ulong) )
                 return PrepareTextValueField( new UnsignedLongField( cheatName ) );
-            else if( cheatProp.PropertyType == typeof(byte) )
+            else if( type == typeof(byte) )
                 return PrepareSubIntegerField<byte>( new IntegerField( cheatName ), Byte.MinValue, Byte.MaxValue );
-            else if( cheatProp.PropertyType == typeof(sbyte) )
+            else if( type == typeof(sbyte) )
                 return PrepareSubIntegerField<sbyte>( new IntegerField( cheatName ), SByte.MinValue, SByte.MaxValue );
-            else if( cheatProp.PropertyType == typeof(short) )
+            else if( type == typeof(short) )
                 return PrepareSubIntegerField<short>( new IntegerField( cheatName ), Int16.MinValue, Int16.MaxValue );
-            else if( cheatProp.PropertyType == typeof(ushort) )
+            else if( type == typeof(ushort) )
                 return PrepareSubIntegerField<ushort>( new IntegerField( cheatName ), UInt16.MinValue, UInt16.MaxValue );
-            else if( cheatProp.PropertyType == typeof(string) )
+            else if( type == typeof(string) )
                 return PrepareTextValueField( new TextField( cheatName ) );
 
             return null;
@@ -236,29 +274,35 @@ namespace Silentor.CheatPanel
                 field.isDelayed = true;
                 field.RegisterCallback<FocusInEvent>( FieldFocusIn );
                 field.RegisterCallback<FocusOutEvent>( FieldFocusOut );
-                if ( cheatProp.CanWrite )                        
-                    field.RegisterValueChangedCallback( evt => UpdateProperty( evt.newValue ) );
+                if ( setValue != null )                        
+                    field.RegisterValueChangedCallback( evt => setValue( evt.newValue ) );
                 else
                     field.SetEnabled( false );
 
-                if ( cheatProp.CanRead ) //Property cheats value should be refreshed if changed externally
-                    RefreshFieldValue( () => field.SetValueWithoutNotify( (T)cheatProp.GetValue( CheatObject, null )), _cancel );
+                if ( getValue != null ) //Property cheats value should be refreshed if changed externally
+                    RefreshFieldValue( () => field.SetValueWithoutNotify( (T)getValue()), _cancel );
 
                 return field;
             }
 
-            IntegerField PrepareSubIntegerField<T>( IntegerField field, int min, int max )
+            IntegerField PrepareSubIntegerField<T>( IntegerField field, int min, int max ) where T : IConvertible
             {
                 field.AddToClassList( "CheatTextBox" );
                 field.AddToClassList( "CheatLine" );
                 field.isDelayed = true;
-                if ( cheatProp.CanWrite )                        
-                    field.RegisterValueChangedCallback( evt => UpdateProperty( Convert.ChangeType(Math.Clamp(evt.newValue, min, max), typeof(T)) ) );
+                if ( setValue != null )
+                {
+                    field.RegisterValueChangedCallback( evt =>
+                    {
+                        var clampedValue = Math.Clamp( evt.newValue, min, max );
+                        setValue( Convert.ChangeType( clampedValue, typeof(T) ) );
+                    } );
+                }
                 else
                     field.SetEnabled( false );
 
-                if ( cheatProp.CanRead ) //Property cheats value should be refreshed if changed externally
-                    RefreshFieldValue( () => field.SetValueWithoutNotify( Convert.ToInt32( cheatProp.GetValue( CheatObject, null ))), _cancel );
+                if ( getValue != null ) //Property cheats value should be refreshed if changed externally
+                    RefreshFieldValue( () => field.SetValueWithoutNotify( Convert.ToInt32( getValue())), _cancel );
 
                 return field;
             }

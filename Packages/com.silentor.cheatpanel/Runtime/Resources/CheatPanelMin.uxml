@@ -1,6 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
+    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
     <ui:VisualElement name="MinPanel" class="Tab" style="flex-grow: 1;">
-        <ui:Button text="+" tooltip="Click to open Cheat Panel" name="MaxBtn" style="width: 20px; min-width: 20px; max-width: 20px; height: 20px; min-height: 20px; max-height: 20px; padding-top: 1px; padding-right: 1px; padding-bottom: 1px; padding-left: 1px; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; font-size: 10px;" />
+        <ui:Button text="+" tooltip="Click to open Cheat Panel" name="MaxBtn" style="width: 20px; min-width: 20px; max-width: 20px; height: 20px; min-height: 20px; max-height: 20px; padding-top: 1px; padding-right: 1px; padding-bottom: 1px; padding-left: 1px; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; font-size: 10px; position: absolute; top: 20px; left: 20px;" />
     </ui:VisualElement>
 </ui:UXML>

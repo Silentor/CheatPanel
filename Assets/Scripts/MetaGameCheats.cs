@@ -7,10 +7,11 @@ namespace Silentor.CheatPanel.DevProject
 {
     public class MetaGameCheats : ICheats
     {
-        private bool  _isImmortal; 
-        private float _playerSpeed = 5.55f; 
-        private int   _hp          = 100;
-        private string _name = "MyName";
+        private bool   _isImmortal; 
+        private float  _playerSpeed = 5.55f; 
+        private int    _hp          = 100;
+        private string _name        = "MyName";
+        private int    _money       = 69;
 
         [Cheat("Player")]
         public void Kill( )
@@ -108,15 +109,14 @@ namespace Silentor.CheatPanel.DevProject
             set => _name = value;
         }
         
-        [Cheat("Player")]
-        public ulong Money
+        [Cheat("Resources", TabName = "Resources")]
+        public void AddMoney( [CheatValue(100, 1000, 10000)] int amount )
         {
-            get => (ulong)_hp;
-            set => _hp = (int)value;
+            _money += amount;
+            Debug.Log( $"added {amount} money, total {_money}" );
         }
 
-
-
+        [Cheat(CheatName = "cheat name test +")]
         public void DoThird2( )
         {
             Debug.Log("Doing Cheat 3...");
