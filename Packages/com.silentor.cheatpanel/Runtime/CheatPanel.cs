@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -25,16 +26,40 @@ namespace Silentor.CheatPanel
             {
                 ShowPanel();
             }
-        } 
+        }
 
-        private          UIDocument     _doc;
-        private          SettingsDTO    _settings;
-        private          Settings       _settingsManager;
-        private          float          _updatedTimeScale = -1f;
-        private          int            _updatedFps       = -2;
-        private          FpsMeter       _fpsMeter;
-        private readonly List<CheatTab> _tabs = new();
-        private          CheatTab       _selectedTab;
+        /// <summary>
+        /// Show temporary text in the bottom of the cheat panel.
+        /// </summary>
+        /// <param name="result"></param>
+        internal void ShowResult( String result )
+        {
+            if( _resultLbl != null )
+            {
+                _resultLbl.AddToClassList( TabViewResultShowUssClassName );
+                _resultLbl.text = result;
+                _resultTransitionTask?.Pause();                                 //Yes, it's a recommended way to stop transition
+                _resultTransitionTask = _resultLbl.schedule.Execute( ( ) =>
+                {
+                    _resultLbl.RemoveFromClassList( TabViewResultShowUssClassName );
+
+                } ).StartingIn( 5000 );
+            }
+        }
+
+        private          UIDocument                  _doc;
+        private          SettingsDTO                 _settings;
+        private          Settings                    _settingsManager;
+        private          float                       _updatedTimeScale = -1f;
+        private          int                         _updatedFps       = -2;
+        private          FpsMeter                    _fpsMeter;
+        private readonly List<CheatTab>              _tabs = new();
+        private          CheatTab                    _selectedTab;
+        private          Label                       _resultLbl;
+        private          IVisualElementScheduledItem _resultTransitionTask;
+
+        private const String TabViewResultUssClassName = "TabView__result";
+        private const String TabViewResultShowUssClassName = TabViewResultUssClassName + "--show";
 
 
         private void Awake( )
@@ -45,7 +70,7 @@ namespace Silentor.CheatPanel
             _fpsMeter        = new FpsMeter();
             _fpsMeter.StartMeter();
 
-            var systemTab = new CheatTab("System");
+            var systemTab = new CheatTab("System", destroyCancellationToken ) ;
             systemTab.PredefinedCheats.Add( CreateSystemTabPredefinedContent() );
             _tabs.Add( systemTab );
             _selectedTab = systemTab;
@@ -65,18 +90,24 @@ namespace Silentor.CheatPanel
                 var root = _doc.rootVisualElement;
                 root.Clear();
                 var panelInstance = Resources.CheatPanelMax.Instantiate( );
+                var tabView       = panelInstance.Q<VisualElement>( "CheatTabView" );
+                var minimizeBtn   = panelInstance.Q<Button>( "MinimizeBtn" );
+                _resultLbl    = panelInstance.Q<Label>( "Result" );
+                minimizeBtn.clicked += CheatPanelOnMinMaxToggleClicked;
+                var contentContainer = panelInstance.Q<VisualElement>( "Content" );
+
                 //panelInstance.style.paddingTop = Screen.height - Screen.safeArea.yMax;
                 root.Add( panelInstance );
-                var tabView = root.Q<VisualElement>( "CheatTabView" );
-                tabView.Q("Header").Q( "ToolBar" ).Q<Button>( "MinimizeBtn" ).clicked += CheatPanelOnMinMaxToggleClicked;
 
                 foreach ( var cheatTab in _tabs )                    
-                    AddTab( tabView, cheatTab );
-                var contentContainer = tabView.Q<VisualElement>( "Content" );
+                    AddTab( tabView, contentContainer, cheatTab );
                 SelectTab( contentContainer, _selectedTab );
             }
             else
             {
+                foreach ( var tab in _tabs )                    
+                    tab.Hide();
+
                 var root = _doc.rootVisualElement;
                 root.Clear();
                 var panelInstance = Resources.CheatPanelMin.Instantiate( );
@@ -146,14 +177,11 @@ namespace Silentor.CheatPanel
             return instance;
         }
 
-        private void AddTab( VisualElement cheatTabView, CheatTab tab )
+        private void AddTab( VisualElement cheatTabView, VisualElement contentContainer, CheatTab tab )
         {
             var tabBtnContainer = cheatTabView.Q<VisualElement>( "TabsScroll" );
-            var tabBtn = new Button( );
-            tabBtn.AddToClassList( "CheatBtn" );
+            var tabBtn = tab.CheatTabButton;
             tabBtnContainer.Add( tabBtn );
-            tabBtn.text    =  tab.Name;
-            var contentContainer = cheatTabView.Q<VisualElement>( "Content" );
             tabBtn.clicked += () => TabBtnOnclicked( contentContainer, tab );
         }
 
@@ -161,7 +189,16 @@ namespace Silentor.CheatPanel
         {
             foreach ( var cheatTab in _tabs )
             {
-                cheatTab.CheatTabButton.EnableInClassList( "CheatBtn--pressed", cheatTab == selectedTab );
+                if( cheatTab == selectedTab )
+                {
+                    cheatTab.CheatTabButton.AddToClassList( "CheatBtn--pressed" );
+                    cheatTab.Show();
+                }
+                else
+                {
+                    cheatTab.CheatTabButton.RemoveFromClassList( "CheatBtn--pressed" );
+                    cheatTab.Hide();
+                }
             }
             contentContainer.Clear();
             var tabContent = selectedTab.GetUI();
@@ -236,7 +273,7 @@ namespace Silentor.CheatPanel
 
                 if ( Cheat.IsValidCheat( member ) )
                 {
-                    var cheat           = new Cheat( cheats, member, destroyCancellationToken );
+                    var cheat           = new Cheat( cheats, member, this, destroyCancellationToken );
                     var tabNameForCheat = cheat.TabName ?? defaultTabName;
                     var tab             = GetOrCreateTab( tabNameForCheat );
                     tab.Add( cheat );
@@ -251,7 +288,7 @@ namespace Silentor.CheatPanel
             var tab = _tabs.FirstOrDefault( t => t.Name == tabName );
             if ( tab == null )
             {
-                tab = new CheatTab( tabName );
+                tab = new CheatTab( tabName, destroyCancellationToken );
                 _tabs.Add( tab );
             }
 

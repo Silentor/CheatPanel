@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 
@@ -8,16 +10,22 @@ namespace Silentor.CheatPanel
 {
     public class CheatTab
     {
-        public readonly string              Name;
-        public readonly Button              CheatTabButton;
-        public readonly List<VisualElement> PredefinedCheats = new();
-        public readonly List<CheatGroup>         CheatsGroups           = new();
+        public readonly  string     Name;
+        
 
-        public CheatTab(String name )
+        public readonly  Button              CheatTabButton;
+        public readonly  List<VisualElement> PredefinedCheats = new();
+        public readonly  List<CheatGroup>    CheatsGroups     = new();
+
+        public Boolean IsVisible { get; private set; }
+
+        public CheatTab(String name, CancellationToken cancel )
         {
-            Name           = name;
-            CheatTabButton = new Button();
+            Name                = name;
+            _cancel             = cancel;
+            CheatTabButton      = new Button();
             CheatTabButton.text = name;
+            CheatTabButton.AddToClassList( TabButtonUssClassName );
         }
 
         public void Add( Cheat cheat )
@@ -52,16 +60,28 @@ namespace Silentor.CheatPanel
             return _contentUI ??= GenerateContentUI();
         }
 
-        private void InvalidateUI( )
+        public void Show( )
         {
-            _contentUI = null;
+            IsVisible = true;
+            if( _contentUI == null )
+                _contentUI = GenerateContentUI();
         }
 
-        private VisualElement _contentUI;
+        public void Hide( )
+        {
+            IsVisible = false;
+        }
+
+        private          VisualElement     _contentUI;
+        private readonly CancellationToken _cancel;
+        private const    String            TabUssClassName        = "tab";
+        private const    String            TabContentUssClassName = "tab__content";
+        private const    String            TabButtonUssClassName  = "tab__button";
 
         private VisualElement GenerateContentUI( )
         {
             var content = new VisualElement();
+            content.AddToClassList( TabContentUssClassName );
 
             foreach ( var predefinedCheatUI in PredefinedCheats )
             {
@@ -75,5 +95,11 @@ namespace Silentor.CheatPanel
 
             return content;
         }
+
+        private void InvalidateUI( )
+        {
+            _contentUI = null;
+        }
+        
     }
 }

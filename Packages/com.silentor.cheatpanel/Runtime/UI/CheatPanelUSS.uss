@@ -1,14 +1,3 @@
-.CheatLabel {
-    margin-top: 1px;
-    margin-right: 1px;
-    padding-top: 1px;
-    padding-bottom: 1px;
-    margin-bottom: 1px;
-    margin-left: 1px;
-    padding-right: 1px;
-    padding-left: 1px;
-}
-
 .CheatBtn {
     margin-top: 1px;
     margin-right: 1px;
@@ -34,13 +23,24 @@
     max-height: 20px;
 }
 
+.CheatLabel {
+    margin-top: 1px;
+    margin-right: 1px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    margin-bottom: 1px;
+    margin-left: 1px;
+    padding-right: 1px;
+    padding-left: 1px;
+}
+
 .CheatTextBox {
 }
 
 .CheatSlider {
 }
 
-.CheatSlider > .unity-base-slider__input{
+.CheatSlider > .unity-base-slider__input {
     min-width: 100px;
 }
 
@@ -72,6 +72,19 @@
     flex-direction: row;
     min-height: 22px;
     max-height: 22px;
+}
+
+.TabView__result {
+    display: none;
+    transition-property: opacity, display;
+    transition-duration: 0.5s;
+    opacity: 0;
+    white-space: normal;
+}
+
+.TabView__result--show {
+    display: flex;
+    opacity: 1;
 }
 
 .Tab {

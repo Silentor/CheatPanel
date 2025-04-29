@@ -110,21 +110,22 @@ namespace Silentor.CheatPanel.DevProject
         }
         
         [Cheat("Resources", TabName = "Resources")]
-        public void AddMoney( [CheatValue(100, 1000, 10000)] int amount )
+        public String AddMoney( [CheatValue(100, 1000, 10000)] int amount )
         {
             _money += amount;
-            Debug.Log( $"added {amount} money, total {_money}" );
+            return $"added {amount} money, total {_money}" ;
         }
 
-        [Cheat(CheatName = "cheat name test +")]
-        public void DoThird2( )
+        [Cheat(CheatName = "with result")]
+        public int DoThird2( )
         {
-            Debug.Log("Doing Cheat 3...");
+            return 42 ;
         }
         
-        public void DoThird3( )
+        [Cheat(CheatName = "very long result")]
+        public string DoThird3( )
         {
-            Debug.Log("Doing Cheat 3...");
+            return "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum";
         }
         
         public void DoThird4( )

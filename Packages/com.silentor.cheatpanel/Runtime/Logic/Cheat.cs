@@ -17,14 +17,16 @@ namespace Silentor.CheatPanel
         public readonly String TabName;
         public readonly String GroupName;
         
-        public readonly  ICheats           CheatObject;
-        public readonly  MemberInfo        MemberInfo;
+        public readonly  ICheats    CheatObject;
+        public readonly  MemberInfo MemberInfo;
+        
 
-        public Cheat(ICheats cheatObject, MemberInfo memberInfo, CancellationToken cancel )
+        public Cheat(ICheats cheatObject, MemberInfo memberInfo, CheatPanel cheatPanel, CancellationToken cancel )
         {
-            CheatObject  = cheatObject;
-            MemberInfo   = memberInfo;
-            _cancel = cancel;
+            CheatObject    = cheatObject;
+            MemberInfo     = memberInfo;
+            _cheatPanel = cheatPanel;
+            _cancel        = cancel;
             var cheatAttribute = memberInfo.GetCustomAttribute<CheatAttribute>( );
             if ( cheatAttribute != null )
             {
@@ -79,6 +81,7 @@ namespace Silentor.CheatPanel
         private readonly CancellationToken _cancel;
         private          PropertyInfo      _cheatProp;
         private          bool              _isRefreshFieldExceptionReported;
+        private readonly CheatPanel          _cheatPanel;
 
         private VisualElement GenerateUI( )
         {
@@ -93,7 +96,7 @@ namespace Silentor.CheatPanel
                     cheatBtn.AddToClassList( "CheatBtn" );
                     cheatBtn.text = cheatName;
 
-                    cheatBtn.clicked += ( ) => cheatMethod.Invoke( CheatObject, null );
+                    cheatBtn.clicked += ( ) => ExecuteMethodCheat( null );
                     return cheatBtn;
                 }
                 else if( paramz.Length == 1 )           
@@ -112,7 +115,7 @@ namespace Silentor.CheatPanel
                             var paramBtn = new Button( );
                             paramBtn.AddToClassList( "CheatBtn" );
                             paramBtn.text = paramVal.ToString();
-                            paramBtn.clicked += ( ) => cheatMethod.Invoke( CheatObject, new[] { paramVal } );
+                            paramBtn.clicked += ( ) => ExecuteMethodCheat( new []{paramVal} );
                             container.Add( paramBtn );
                         }
                         return container;
@@ -305,6 +308,16 @@ namespace Silentor.CheatPanel
                     RefreshFieldValue( () => field.SetValueWithoutNotify( Convert.ToInt32( getValue())), _cancel );
 
                 return field;
+            }
+        }
+
+        private void ExecuteMethodCheat( Object[] paramz )
+        {
+            var methodInfo = (MethodInfo)MemberInfo;
+            var result = methodInfo.Invoke( CheatObject, paramz );
+            if( result != null )
+            {
+                _cheatPanel.ShowResult( result.ToString() );
             }
         }
 

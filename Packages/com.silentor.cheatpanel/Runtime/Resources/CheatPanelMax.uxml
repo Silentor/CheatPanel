@@ -10,5 +10,6 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="Content" style="flex-grow: 1;" />
+        <ui:Label text="cheat execute result" name="Result" class="CheatLabel TabView__result" />
     </ui:VisualElement>
 </ui:UXML>
