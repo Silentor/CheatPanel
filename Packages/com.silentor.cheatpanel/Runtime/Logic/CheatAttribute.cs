@@ -13,6 +13,8 @@ namespace Silentor.CheatPanel
         public String GroupName;
         public String TabName;
 
+        public Cheat.RefreshUITiming RefreshTime;
+
         public CheatAttribute( )
         {
             CheatName = null;
