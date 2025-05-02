@@ -17,7 +17,7 @@ namespace Silentor.CheatPanel
             _cheatObject   = cheatObject;
             _refreshTiming = cheatProperty.CanRead
                     ? Attr?.RefreshTime ?? RefreshUITiming.PerSecond
-                    : RefreshUITiming.None;
+                    : RefreshUITiming.Never;
             //_min           = min;
         }
 

@@ -13,18 +13,23 @@ namespace Silentor.CheatPanel.DevProject
         private string _name        = "MyName";
         private int    _money       = 69;
 
-        // [Cheat("Player")]
-        // public void Kill( )
-        // {
-        //     Debug.Log("Doing Cheat ...");
-        // }
-        //
-        // [Cheat("Player")]
-        // public void Ressurect( )
-        // {
-        //     Debug.Log("Doing Cheat 2...");
-        // }
-        //
+        [Cheat("Player")]
+        public void Kill( )
+        {
+            Debug.Log("Doing Cheat ...");
+        }
+
+        [Cheat("Player")]
+        public String KillWithResult( )
+        {
+            return "Doing Cheat ...";
+        }
+        
+        public void NoCheatAttr( )
+        {
+            Debug.Log("Doing Cheat 2...");
+        }
+        
         [Cheat("Player")]
         public bool Immortal
         {

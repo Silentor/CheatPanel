@@ -24,24 +24,39 @@ namespace Silentor.CheatPanel
         public static Cheat CreateCheat( MemberInfo cheatMember, ICheats cheatObject, CheatPanel cheatPanel, CancellationToken cancel )
         {
             if( cheatMember is PropertyInfo cheatProperty )
-                return CheatProperty.CreatePropertyCheat( cheatProperty, cheatObject, cancel );
+            {
+                var rangeAttr = cheatProperty.GetCustomAttribute<RangeAttribute>();
+                if( rangeAttr == null )
+                {
+                    return new CheatPropertyField( cheatProperty, cheatObject, cancel );
+                }
+                else
+                {
+                    return new CheatPropertySlider( cheatProperty, rangeAttr, cheatObject, cancel );
+                }
+            }
+            else if( cheatMember is MethodInfo cheatMethod )
+            {
+                if( cheatMethod.GetParameters().Length == 0 )
+                    return new CheatMethod( cheatMethod, cheatObject, cheatPanel, cancel );
+            }
 
             return null;
         }
 
-        protected Cheat(   MemberInfo memberInfo, ICheats cheatObject, CancellationToken cancel )
+        protected Cheat(   MemberInfo methodInfo, ICheats cheatObject, CancellationToken cancel )
         {
             CheatObject    = cheatObject;
             _cancel        = cancel;
 
-            Attr = memberInfo.GetCustomAttribute<CheatAttribute>( );
+            Attr = methodInfo.GetCustomAttribute<CheatAttribute>( );
             if ( Attr != null )
             {
                 TabName   = Attr.TabName;
                 GroupName = Attr.GroupName;
                 Name      = Attr.CheatName;
             }
-            Name ??= memberInfo.Name;
+            Name ??= methodInfo.Name;
         }
 
         public          VisualElement GetUI()
@@ -376,16 +391,16 @@ namespace Silentor.CheatPanel
             public readonly ERefreshUIType Type;
             public readonly float          Time;
 
-            public static readonly RefreshUITiming None = new(ERefreshUIType.None, 0);
-            public static readonly RefreshUITiming OneTime = new(ERefreshUIType.OneTime, 0);
-            public static readonly RefreshUITiming EveryFrame = new(ERefreshUIType.Loop, 0);
-            public static readonly RefreshUITiming PerSecond = new(ERefreshUIType.Loop, 1);
-            public static RefreshUITiming Loop(float time) => new(ERefreshUIType.Loop, time);
+            public static readonly RefreshUITiming Never      = new(ERefreshUIType.None, 0);         //Cheat UI should not be refreshed
+            public static readonly RefreshUITiming OneTime    = new(ERefreshUIType.OneTime, 0);     //Refresh one time at the generate UI stage
+            public static readonly RefreshUITiming EveryFrame = new(ERefreshUIType.Loop, 0);        //Refresh cheat UI every frame
+            public static readonly RefreshUITiming PerSecond  = new(ERefreshUIType.Loop, 1);    //Refresh cheat UI every second
+            public static          RefreshUITiming Loop(float time) => new(ERefreshUIType.Loop, time);
 
             private RefreshUITiming( ERefreshUIType mode, float time ) 
             {
                 Type = mode;
-                Time = time;
+                Time = Math.Max( time, 0f );
             }
         }
     }
