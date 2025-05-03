@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Scripting;
+using UnityEngine.UIElements;
 using Object = System.Object;
 
 namespace Silentor.CheatPanel.DevProject
@@ -13,10 +14,10 @@ namespace Silentor.CheatPanel.DevProject
         private string _name        = "MyName";
         private int    _money       = 69;
 
-        // public string MethodParams( int par1 )
-        // {
-        //     return $"called {nameof(MethodParams)} with {par1}";
-        // } 
+        public string MethodParams( BackgroundSizeType @enum, byte par1 = 66, Boolean par2 = true )
+        {
+            return $"called {nameof(MethodParams)} with {@enum}, {par1}, {par2}";
+        } 
 
         // [Cheat("Player")]
         // public void Kill( )

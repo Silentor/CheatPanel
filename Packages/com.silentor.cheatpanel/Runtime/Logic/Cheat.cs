@@ -46,19 +46,20 @@ namespace Silentor.CheatPanel
             return null;
         }
 
-        protected Cheat(   MemberInfo methodInfo, ICheats cheatObject, CancellationToken cancel )
+        protected Cheat(   MemberInfo cheatMember, ICheats cheatObject, CancellationToken cancel )
         {
-            CheatObject    = cheatObject;
-            _cancel        = cancel;
+            _cheatMember = cheatMember;
+            CheatObject  = cheatObject;
+            _cancel      = cancel;
 
-            Attr = methodInfo.GetCustomAttribute<CheatAttribute>( );
+            Attr = cheatMember.GetCustomAttribute<CheatAttribute>( );
             if ( Attr != null )
             {
                 TabName   = Attr.TabName;
                 GroupName = Attr.GroupName;
                 Name      = Attr.CheatName;
             }
-            Name ??= methodInfo.Name;
+            Name ??= cheatMember.Name;
         }
 
         public          VisualElement GetUI()
@@ -79,11 +80,7 @@ namespace Silentor.CheatPanel
                 {
                     if ( !methodInfo.IsSpecialName && (methodInfo.IsPublic || methodInfo.GetCustomAttribute<CheatAttribute>() != null ) )
                     {
-                        var parameters = methodInfo.GetParameters( );
-                        if ( parameters.Length <= 1 )
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
                 else if ( memberInfo is PropertyInfo propertyInfo)
@@ -101,12 +98,12 @@ namespace Silentor.CheatPanel
             return false;
         }
 
-        protected readonly CheatAttribute Attr;
-        private          VisualElement     _ui;
-        private readonly CancellationToken _cancel;
-        private          bool              _isRefreshFieldExceptionReported;
-        private readonly CheatPanel        _cheatPanel;
-
+        protected readonly CheatAttribute    Attr;
+        private            VisualElement     _ui;
+        private readonly   CancellationToken _cancel;
+        private            bool              _isRefreshFieldExceptionReported;
+        private readonly   CheatPanel        _cheatPanel;
+        private readonly   MemberInfo        _cheatMember;
 
 
         protected abstract VisualElement GenerateUI( );
@@ -117,7 +114,19 @@ namespace Silentor.CheatPanel
 
         private VisualElement PrepareUI( )
         {
-            var ui = GenerateUI();
+            VisualElement ui = null;
+            try
+            {
+                ui = GenerateUI();
+            }
+            catch ( Exception e )
+            {
+                Debug.LogError( $"[Cheat]-[PrepareUI] Exception {e.GetType().Name} generating UI for cheat {_cheatMember}. Cheat will be discarded: {e}" );
+            }
+
+            if( ui == null )
+                return null;
+            
             var refreshTime = GetRefreshUITiming();
             if( refreshTime.Type == ERefreshUIType.OneTime )
             {
@@ -235,7 +244,7 @@ namespace Silentor.CheatPanel
                     if( !_isRefreshFieldExceptionReported )
                     {
                         _isRefreshFieldExceptionReported = true;
-                        Debug.LogError( $"Cheat {ToString()} refresh UI exception: {e.Message}" );
+                        Debug.LogError( $"[Cheat]-[RefreshUILoop] Cheat {ToString()} refresh UI exception: {e.Message}" );
                     }
                 }
                 

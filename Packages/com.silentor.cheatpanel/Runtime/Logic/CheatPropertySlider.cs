@@ -33,21 +33,16 @@ namespace Silentor.CheatPanel
 
         protected override VisualElement GenerateUI( )
         {
-            var valueLabel = new Label( );
-            var slider     = PrepareSlider( valueLabel );
+            var slider     = PrepareSlider( );
             if( slider == null )
                 return null;                            //Incompatible cheat property type, ignore cheat
 
-            var container = new VisualElement( );
-            container.Add( slider );
-            container.Add( valueLabel );
-            container.AddToClassList( "CheatLine" );
-            valueLabel.AddToClassList( "CheatLabel" );
+            slider.AddToClassList( "CheatLine" );
             slider.AddToClassList( "CheatSlider" );
-            return container;
+            return slider;
         }
 
-        private VisualElement PrepareSlider( Label valueLabel )
+        private VisualElement PrepareSlider( )
         {
             var propType = _cheatProperty.PropertyType;
             if( propType == typeof(Single) )
@@ -128,12 +123,14 @@ namespace Silentor.CheatPanel
         private Slider GetFloatSlider(  )
         {
             var slider = new Slider( Name, _min, _max );
+            //slider.showInputField = true;
             return slider;
         }
 
         private SliderInt GetIntSlider(  )
         {
             var slider = new SliderInt( Name, (int)_min, (int)_max );
+            //slider.showInputField = true;
             return slider;
         }
     }

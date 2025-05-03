@@ -41,6 +41,11 @@ namespace Silentor.CheatPanel
             _setter( propValue );
         }
 
+        public override VisualElement GetField( )
+        {
+            return _field;
+        }
+
         public override Object GetBoxedFieldValue( )
         {
             return _field.value;

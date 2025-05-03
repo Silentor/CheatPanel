@@ -106,7 +106,7 @@ namespace Silentor.CheatPanel
             {
                 var  field = new Toggle( cheatName );
                 field.AddToClassList( "CheatLine" );        //Special case
-                field.AddToClassList( "CheatToggle" );
+                //field.AddToClassList( "CheatToggle" );
                 _cheatFieldWrapper = new PropertyFieldSimpleWrapper<Boolean>( field, _cheatProperty, _cheatObject );
                 return field;
             }
@@ -135,7 +135,7 @@ namespace Silentor.CheatPanel
         private static void StyleField<TField>( TextInputBaseField<TField> field )
         {
             field.AddToClassList( "CheatLine" );
-            field.AddToClassList( "CheatTextBox" );
+            //field.AddToClassList( "CheatTextBox" );
             field.isDelayed = true;
         }
     }

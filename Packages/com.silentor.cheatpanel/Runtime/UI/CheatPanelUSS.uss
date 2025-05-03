@@ -1,7 +1,7 @@
 .CheatBtn {
-    margin-top: 1px;
+    margin-top: 0px;
     margin-right: 1px;
-    margin-bottom: 1px;
+    margin-bottom: 0px;
     margin-left: 1px;
     padding-top: 1px;
     padding-right: 1px;
@@ -21,23 +21,38 @@
     flex-direction: row;
     min-height: 20px;
     max-height: 20px;
+    margin-top: 2px;
+    margin-top: 2px;
+    
 }
 
 .CheatLabel {
-    margin-top: 1px;
+    margin-top: 0px;
     margin-right: 1px;
     padding-top: 1px;
     padding-bottom: 1px;
-    margin-bottom: 1px;
+    margin-bottom: 0px;
     margin-left: 1px;
     padding-right: 1px;
     padding-left: 1px;
 }
 
 .CheatTextBox {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.CheatEnum {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.CheatEnum > .unity-enum-field__input {
+    padding: 0;
 }
 
 .CheatSlider {
+    
 }
 
 .CheatSlider > .unity-base-slider__input {
