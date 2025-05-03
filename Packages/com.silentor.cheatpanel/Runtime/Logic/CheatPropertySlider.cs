@@ -23,12 +23,12 @@ namespace Silentor.CheatPanel
             _max           = rangeAttr.max;
         }
 
-        private          Action          _refreshFieldUI;
-        private readonly RefreshUITiming _refreshTiming;
-        private readonly PropertyInfo    _cheatProperty;
-        private readonly ICheats         _cheatObject;
-        private readonly Single          _min;
-        private readonly Single          _max;
+        private readonly RefreshUITiming       _refreshTiming;
+        private readonly PropertyInfo          _cheatProperty;
+        private readonly ICheats               _cheatObject;
+        private readonly Single                _min;
+        private readonly Single                _max;
+        private          CheatFieldWrapperBase _cheatFieldWrapper;
 
 
         protected override VisualElement GenerateUI( )
@@ -53,71 +53,61 @@ namespace Silentor.CheatPanel
             if( propType == typeof(Single) )
             {
                 var  field = GetFloatSlider( );
-                _refreshFieldUI = GetRefreshUI( field, valueLabel );
-                PrepareUpdateCheatProperty( field );
+                _cheatFieldWrapper = new PropertyFieldSimpleWrapper<Single>( field, _cheatProperty, _cheatObject );
                 return field;
             }
             else if( propType == typeof(Double) )
             {
                 var  field = GetFloatSlider();
-                _refreshFieldUI = GetRefreshUI<float, double>( field, valueLabel, d => d.ClampToFloat() );
-                PrepareUpdateCheatProperty<float, double>( field, d => d );
+                _cheatFieldWrapper = new PropertyFieldWrapper<Single, Double>( field, _cheatProperty, _cheatObject, f => f, d => d.ClampToFloat() );
                 return field;
             }
             else if( propType == typeof(Int32) )
             {
                 var  field = GetIntSlider(  );
-                _refreshFieldUI = GetRefreshUI( field, valueLabel );
-                PrepareUpdateCheatProperty( field );
+                _cheatFieldWrapper = new PropertyFieldSimpleWrapper<Int32>( field, _cheatProperty, _cheatObject );
                 return field;
             }
             else if( propType == typeof(Int64) )
             {
                 var  field = GetIntSlider(  );
-                _refreshFieldUI = GetRefreshUI<Int32, Int64>( field, valueLabel, ul => ul.ClampToInt32() );
-                PrepareUpdateCheatProperty<Int32, Int64>( field, i => i );
+                _cheatFieldWrapper = new PropertyFieldWrapper<Int32, Int64>( field, _cheatProperty, _cheatObject, f => f, p => p.ClampToInt32() );
                 return field;
             }
             else if( propType == typeof(UInt32) )
             {
                 var  field = GetIntSlider(  );
-                _refreshFieldUI = GetRefreshUI<Int32, UInt32>( field, valueLabel, ui => ui.ClampToInt32() );
-                PrepareUpdateCheatProperty<Int32, UInt32>( field, i => i.ClampToUInt32() );
+                _cheatFieldWrapper = new PropertyFieldWrapper<Int32, UInt32>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt32(), p => p.ClampToInt32() );
                 return field;
             }
             else if( propType == typeof(UInt64) )
             {
                 var  field = GetIntSlider(  );
-                _refreshFieldUI = GetRefreshUI<Int32, UInt64>( field, valueLabel, ul => ul.ClampToInt32() );
-                PrepareUpdateCheatProperty<Int32, UInt64>( field, i => i.ClampToUInt64() );
+                _cheatFieldWrapper = new PropertyFieldWrapper<Int32, UInt64>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt64(), p => p.ClampToInt32() );
                 return field;
             }
             else if( propType == typeof(Byte) )
             {
                 var  field = GetIntSlider(  );
-                _refreshFieldUI = GetRefreshUI<int, byte>( field, valueLabel, v => v );
-                PrepareUpdateCheatProperty( field, i => i.ClampToUInt8() );
+                _cheatFieldWrapper = new PropertyFieldWrapper<Int32, Byte>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt8(), p => p );
                 return field;
             }
             else if( propType == typeof(SByte) )
             {
                 var  field = GetIntSlider(  );
-                _refreshFieldUI = GetRefreshUI<int, sbyte>( field, valueLabel, v => v );
-                PrepareUpdateCheatProperty( field, i => i.ClampToInt8() );
+                _cheatFieldWrapper = new PropertyFieldWrapper<Int32, SByte>( field, _cheatProperty, _cheatObject, f => f.ClampToInt8(), p => p );
                 return field;
             }
             else if( propType == typeof(UInt16) )
             {
                 var  field = GetIntSlider(  );
-                _refreshFieldUI = GetRefreshUI<int, ushort>( field, valueLabel, v => v );
-                PrepareUpdateCheatProperty( field, i => i.ClampToUInt16() );
+                _cheatFieldWrapper = new PropertyFieldWrapper<Int32, UInt16>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt16(), p => p );
                 return field;
             }
             else if( propType == typeof(Int16) )
             {
                 var  field = GetIntSlider(  );
-                _refreshFieldUI = GetRefreshUI<int, short>( field, valueLabel, v => v );
-                PrepareUpdateCheatProperty( field, i => i.ClampToInt16() );
+                _cheatFieldWrapper = new PropertyFieldWrapper<Int32, Int16>( field, _cheatProperty, _cheatObject, f => f.ClampToInt16(), p => p );
                 return field;
             }
 
@@ -126,7 +116,8 @@ namespace Silentor.CheatPanel
 
         protected override void RefreshUI( )
         {
-            _refreshFieldUI?.Invoke( );
+            if( _cheatFieldWrapper != null )
+                _cheatFieldWrapper.RefreshFieldUI();
         }
 
         protected override RefreshUITiming GetRefreshUITiming( )
@@ -145,64 +136,5 @@ namespace Silentor.CheatPanel
             var slider = new SliderInt( Name, (int)_min, (int)_max );
             return slider;
         }
-
-        private Action GetRefreshUI<TField>( BaseSlider<TField> field, Label label ) where TField : IComparable<TField>
-        {
-            if( _cheatProperty.CanRead )
-            {
-                var getter   = (Func<TField>)Delegate.CreateDelegate( typeof(Func<TField>), _cheatObject, _cheatProperty.GetGetMethod() );
-                return ( ) =>
-                {
-                    var value = getter();
-                    field.SetValueWithoutNotify( value );
-                    label.text = value.ToString();
-                };
-            }
-
-            return null;
-        }
-
-        private Action GetRefreshUI<TField, TProp>( BaseSlider<TField> field, Label label, Func<TProp, TField> propToFieldConversion ) where TField : IComparable<TField>
-        {
-            if( _cheatProperty.CanRead )
-            {
-                var getter = (Func<TProp>)Delegate.CreateDelegate( typeof(Func<TProp>), _cheatObject, _cheatProperty.GetGetMethod() );
-                return ( ) =>
-                {
-                    var value = propToFieldConversion( getter() );
-                    field.SetValueWithoutNotify( value );
-                    label.text = value.ToString();
-                };
-            }
-
-            return null;
-        }
-
-        private void PrepareUpdateCheatProperty<TField>( BaseSlider<TField> field ) where TField : IComparable<TField>
-        {
-            if( _cheatProperty.CanWrite )
-            {
-                var setter = (Action<TField>)Delegate.CreateDelegate( typeof(Action<TField>), _cheatObject, _cheatProperty.GetSetMethod() );
-                field.RegisterValueChangedCallback( evt => setter( evt.newValue ) );
-            }
-            else
-            {
-                field.SetEnabled( false );
-            }
-        }
-
-        private void PrepareUpdateCheatProperty<TField, TProp>( BaseSlider<TField> field, Func<TField, TProp> fieldToPropConversion ) where TField : IComparable<TField>
-        {
-            if( _cheatProperty.CanWrite )
-            {
-                var setter = (Action<TProp>)Delegate.CreateDelegate( typeof(Action<TProp>), _cheatObject, _cheatProperty.GetSetMethod() );
-                field.RegisterValueChangedCallback( evt => setter( fieldToPropConversion ( evt.newValue ) ) );
-            }
-            else
-            {
-                field.SetEnabled( false );
-            }
-        }
-      
     }
 }

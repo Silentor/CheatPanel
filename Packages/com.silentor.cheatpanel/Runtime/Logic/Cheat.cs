@@ -39,6 +39,8 @@ namespace Silentor.CheatPanel
             {
                 if( cheatMethod.GetParameters().Length == 0 )
                     return new CheatMethod( cheatMethod, cheatObject, cheatPanel, cancel );
+                else
+                    return new CheatMethodParams( cheatMethod, cheatObject, cheatPanel, cancel );
             }
 
             return null;

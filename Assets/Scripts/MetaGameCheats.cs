@@ -13,23 +13,28 @@ namespace Silentor.CheatPanel.DevProject
         private string _name        = "MyName";
         private int    _money       = 69;
 
-        [Cheat("Player")]
-        public void Kill( )
-        {
-            Debug.Log("Doing Cheat ...");
-        }
+        // public string MethodParams( int par1 )
+        // {
+        //     return $"called {nameof(MethodParams)} with {par1}";
+        // } 
 
-        [Cheat("Player")]
-        public String KillWithResult( )
-        {
-            return "Doing Cheat ...";
-        }
-        
-        public void NoCheatAttr( )
-        {
-            Debug.Log("Doing Cheat 2...");
-        }
-        
+        // [Cheat("Player")]
+        // public void Kill( )
+        // {
+        //     Debug.Log("Doing Cheat ...");
+        // }
+        //
+        // [Cheat("Player")]
+        // public String KillWithResult( )
+        // {
+        //     return "Doing Cheat ...";
+        // }
+        //
+        // public void NoCheatAttr( )
+        // {
+        //     Debug.Log("Doing Cheat 2...");
+        // }
+        //
         [Cheat("Player")]
         public bool Immortal
         {
@@ -41,7 +46,7 @@ namespace Silentor.CheatPanel.DevProject
         public bool Immortal2
         {
             get => _isImmortal;
-            set => _isImmortal = value;
+            //set => _isImmortal = value;
         }
         
         //[Cheat("Player")]
@@ -57,7 +62,7 @@ namespace Silentor.CheatPanel.DevProject
             get => _playerSpeed;
             set => _playerSpeed = value;
         }
-
+        
         
         [Cheat("Player")]
         [Range(1, 7)]
@@ -67,53 +72,54 @@ namespace Silentor.CheatPanel.DevProject
             set => _playerSpeed = value;
         }
         
-        // [Cheat("Player")]
-        // [Range(1, 7)]
-        // public byte ByteSlider
-        // {
-        //     get => (Byte)_hp;
-        //     set => _hp = value;
-        // }
-        //
-        // [Cheat("Player")]
-        // public float SpeedRO
-        // {
-        //     get => _playerSpeed;
-        // }
-        //
-        // [Cheat("Player")]
-        // public float SpeedWO
-        // {
-        //     set => _playerSpeed = value;            //Because why not
-        // }
-        //
-        // [Cheat("Player")]
-        // public double SpeedDouble
-        // {
-        //     get => _playerSpeed;
-        //     set => _playerSpeed = (float)value;
-        // }
-        //
-        // [Cheat("Player")]
-        // public Byte HP_Byte
-        // {
-        //     get => (byte)_hp;
-        //     set => _hp = value;
-        // }
-        //
-        // [Cheat("Player")]
-        // public short HP_short
-        // {
-        //     get => (short)_hp;
-        //     set => _hp = value;
-        // }
-        //
-        // [Cheat("Player")]
-        // public string Name
-        // {
-        //     get => _name;
-        //     set => _name = value;
-        // }
+        [Cheat("Player")]
+        [Range(-1, 7)]
+        public byte ByteSlider
+        {
+            get => (Byte)_hp;
+            set => _hp = value;
+        }
+        
+        [Cheat("Player")]
+        public float SpeedRO
+        {
+            get => _playerSpeed;
+        }
+        
+        [Cheat("Player")]
+        public float SpeedWO
+        {
+            set => _playerSpeed = value;            //Because why not
+        }
+        
+        [Cheat("Player")]
+        public double SpeedDouble
+        {
+            get => _playerSpeed;
+            set => _playerSpeed = (float)value;
+        }
+        
+        [Cheat("Player")]
+        public Byte HP_Byte
+        {
+            get => (byte)_hp;
+            set => _hp = value;
+        }
+        
+        [Cheat("Player")]
+        public short HP_short
+        {
+            get => (short)_hp;
+            set => _hp = value;
+        }
+        
+        [Cheat("Player")]
+        public string Name
+        {
+            get => _name;
+            set => _name = value;
+        }
+
         //
         // [Cheat("Resources", TabName = "Resources")]
         // public String AddMoney( [CheatValue(100, 1000, 10000)] int amount )
