@@ -10,6 +10,11 @@ namespace Silentor.CheatPanel.DevProject
 {
     public class MetaGameTestStage : MonoBehaviour
     {
+        private void Awake( )
+        {
+            Application.targetFrameRate = 30;
+        }
+
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         async void Start()
         {
@@ -20,6 +25,9 @@ namespace Silentor.CheatPanel.DevProject
             await Awaitable.WaitForSecondsAsync( 1, destroyCancellationToken );
 
             cheats.AddCheats( new MetaGameCheats() );
+
+            gameObject.AddComponent<HeavyLoadCheats>();
+            cheats.AddCheats(  GetComponent<HeavyLoadCheats>() );
 
             Bench();
         }

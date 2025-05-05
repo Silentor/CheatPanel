@@ -80,7 +80,7 @@ namespace Silentor.CheatPanel
 
         private void OnDestroy( )
         {
-            _fpsMeter.StopMeter();
+            _fpsMeter.Dispose();
         }
 
         private void ShowPanel( )
@@ -229,7 +229,7 @@ namespace Silentor.CheatPanel
 
         private string GetFPSStats( )
         {
-            return $"FPS {_fpsMeter.AverageFPS}, min {_fpsMeter.SlowestFPS}";
+            return $"FPS avg {_fpsMeter.AverageFPS}, 90% {_fpsMeter.Percentile90FPS}, 99% {_fpsMeter.Percentile99FPS}";
         }
 
         private string GetDeviceAndAppInfo( )
