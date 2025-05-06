@@ -1,5 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
+    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/FpsHistogramControl/FpsHistogram.uss?fileID=7433441132597879392&amp;guid=52e65c23504f3be42933c5d8fa820020&amp;type=3#FpsHistogram" />
     <ui:VisualElement name="SystemTab" data-source-type="Silentor.CheatPanel.SystemTab, Silentor.CheatPanel" class="Tab" style="flex-grow: 1;">
         <ui:VisualElement name="DeviceInfo">
             <ui:VisualElement name="ToolBar" class="CheatLine">
@@ -46,6 +47,21 @@
                 <ui:Button text="30" name="FPS_30" class="CheatBtn" />
                 <ui:Button text="60" name="FPS_60" class="CheatBtn" />
             </ui:VisualElement>
+            <ui:VisualElement name="HistogramSettings" class="CheatLine" style="flex-grow: 1;">
+                <ui:Label text="Draw FPS" class="CheatLabel" />
+                <ui:DropdownField choices="Avg,Worst,99%,95%,90%" index="4" name="FPSHistoMode">
+                    <Bindings>
+                        <ui:DataBinding property="index" data-source-path="FPSHistoModeIndex" binding-mode="TwoWay" />
+                    </Bindings>
+                </ui:DropdownField>
+                <ui:VisualElement style="flex-grow: 1;" />
+                <ui:Toggle label="Update" name="FPSHistoUpdate" class="CheatToggle">
+                    <Bindings>
+                        <ui:DataBinding property="value" data-source-path="FPSUpdateHistoMode" binding-mode="TwoWay" />
+                    </Bindings>
+                </ui:Toggle>
+            </ui:VisualElement>
+            <Silentor.CheatPanel.UI.FpsHistogram name="FpsHistogram" class="CheatLine" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

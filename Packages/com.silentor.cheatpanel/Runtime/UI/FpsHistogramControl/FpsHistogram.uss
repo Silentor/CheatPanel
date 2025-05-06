@@ -1,0 +1,6 @@
+FpsHistogram {
+    --excellent-frame-color: lime;
+    --mediocre-frame-color: yellow;
+    --bad-frame-color: red;
+    --top-line-color: gray;
+}

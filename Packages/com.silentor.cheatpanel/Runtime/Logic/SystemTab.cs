@@ -1,28 +1,38 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Silentor.CheatPanel.UI;
+using Silentor.CheatPanel.Utils;
 using Unity.Properties;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using Screen = UnityEngine.Device.Screen;
 using SystemInfo = UnityEngine.Device.SystemInfo;
 using Application = UnityEngine.Device.Application;
-using Object = System.Object;
+using Debug = UnityEngine.Debug;
 
+[assembly: GeneratePropertyBagsForAssembly]
 
 namespace Silentor.CheatPanel
 {
     /// <summary>
     /// Controller for System Tab in Cheat Panel
     /// </summary>
-    public class SystemTab : IDataSourceViewHashProvider, /*INotifyBindablePropertyChanged,*/ IDisposable   //TODO INotifyBindablePropertyChanged doesnt work, investigate
+    public partial class SystemTab : IDataSourceViewHashProvider, /*INotifyBindablePropertyChanged,*/ IDisposable   //TODO INotifyBindablePropertyChanged doesnt work, investigate
     {
         private readonly FpsMeter _fpsMeter;
+        private readonly CheatTab _myTab;
         private float _updatedTimeScale = -1f;
         private int   _updatedFps       = -2;
         private Int64 _version;
         private readonly CancellationTokenSource _cancelUpdates;
+        private Boolean _updateFPSHistogram = true;
+        private int     _FPSHistogramMode = 4;
+        private FpsHistogram _histo;
+        private FpsMeter.Stats[] _pausedHistogrammData;
 
         [CreateProperty ]
         public float TimeScale
@@ -56,9 +66,37 @@ namespace Silentor.CheatPanel
             get => $"FPS avg {_fpsMeter.AverageFPS}, 90% {_fpsMeter.Percentile90FPS}, 99% {_fpsMeter.Percentile99FPS}";
         }
 
-        public SystemTab( FpsMeter fpsMeter )
+        [CreateProperty]
+        public int FPSHistoModeIndex
+        {
+            get => _FPSHistogramMode;
+            set
+            {
+                _FPSHistogramMode = value;
+                if( !FPSUpdateHistoMode )
+                    _histo.SetFPS( _pausedHistogrammData, _fpsMeter.LastStatsCapacity, 1f / OnDemandRendering.effectiveRenderFrameRate, (FpsMeter.EFPSStats)FPSHistoModeIndex );
+            }
+        }
+
+        [CreateProperty]
+        public Boolean FPSUpdateHistoMode
+        {
+            get => _updateFPSHistogram;
+            set
+            {
+                _updateFPSHistogram = value;
+                if ( !_updateFPSHistogram )
+                {
+                    _pausedHistogrammData = _fpsMeter.LastStats.ToArray();
+                }
+            }
+        }
+
+
+        public SystemTab( FpsMeter fpsMeter, CheatTab myTab )
         {
             _fpsMeter = fpsMeter;
+            _myTab = myTab;
             _cancelUpdates = new CancellationTokenSource();
         }
 
@@ -73,43 +111,30 @@ namespace Silentor.CheatPanel
             expandSysInfoBtn.clicked += ( ) => ExpandSysInfoOnClicked( sysInfoLabel, expandSysInfoBtn );
 
             var timescaleBox = instance.Q<VisualElement>( "TimeScale" );
-            //var timescaleLabel = timescaleBox.Q<Label>( "TimeScaleLbl" );
-            //var timescaleSlider = timescaleBox.Q<Slider>( "TimeScaleSlider" );
-            //timescaleSlider.RegisterValueChangedCallback( evt => Time.timeScale = evt.newValue );
             timescaleBox.Q<Button>( "TS_0" ).clicked   += ( ) => Time.timeScale = 0;
             timescaleBox.Q<Button>( "TS_0-1" ).clicked += ( ) => Time.timeScale = 0.1f;
             timescaleBox.Q<Button>( "TS_1" ).clicked   += ( ) => Time.timeScale = 1;
-            // timescaleBox.schedule.Execute( () =>
-            // {
-            //     if( Math.Abs( Time.timeScale - _updatedTimeScale ) > 0.01f )
-            //     {
-            //         _updatedTimeScale   = Time.timeScale;
-            //         timescaleLabel.text = $"TimeScale: {_updatedTimeScale:0.#}";
-            //         timescaleSlider.SetValueWithoutNotify( _updatedTimeScale );
-            //     }
-            // } ).Every( 100 );
 
             var fpsBox = instance.Q<VisualElement>( "FPS" );
-            var fpsStatsLbl = fpsBox.Q<Label>( "FPSStatsLbl" );
-            //var fpsSlider = fpsBox.Q<Slider>( "FPSSlider" );
-            //var fpsTargetLbl = fpsBox.Q<Label>( "TargetFPS" );
-            //fpsSlider.RegisterValueChangedCallback( evt => Application.targetFrameRate = (int)evt.newValue );
             // Mobile oriented controls
             fpsBox.Q<Button>( "FPS_X" ).clicked += () => Application.targetFrameRate = -1;
             fpsBox.Q<Button>( "FPS_15" ).clicked += () => Application.targetFrameRate = 15;
             fpsBox.Q<Button>( "FPS_30" ).clicked += () => Application.targetFrameRate = 30;
             fpsBox.Q<Button>( "FPS_60" ).clicked += () => Application.targetFrameRate = 60;
-            //fpsStatsLbl.schedule.Execute( () => fpsStatsLbl.text = GetFPSStats() ).Every( 1000 );
-            _fpsMeter.Updated +=  _  => { Publish(); };
-            // fpsBox.schedule.Execute( ( ) =>
-            // {
-            //     if ( Application.targetFrameRate != _updatedFps )
-            //     {
-            //         _updatedFps = Application.targetFrameRate;
-            //         fpsSlider.SetValueWithoutNotify( _updatedFps );
-            //         fpsTargetLbl.text = $"FPS: {_updatedFps}";
-            //     }
-            // } ).Every( 100 );
+            _histo = fpsBox.Q<FpsHistogram>( "FpsHistogram" );
+            _fpsMeter.Updated +=  fpsMeter  =>
+            {
+                if ( FPSUpdateHistoMode && _myTab.IsVisible )
+                {
+                    //var timer = Stopwatch.StartNew();
+                    _histo.SetFPS( fpsMeter.LastStats, fpsMeter.LastStatsCapacity, 1f / OnDemandRendering.effectiveRenderFrameRate, (FpsMeter.EFPSStats)FPSHistoModeIndex );
+                    //timer.Stop();
+                    //Debug.Log( $"fps histo {timer.Elapsed.TotalMicroseconds()} mks" ); 
+                }
+
+                Publish();
+            };
+
             //todo add desktop controls (vSync)
 
             CheckUpdatesAsync( _cancelUpdates.Token );
@@ -171,18 +196,21 @@ namespace Silentor.CheatPanel
         {
             while ( !cancel.IsCancellationRequested )
             {
-                if( Math.Abs( Time.timeScale - _updatedTimeScale ) > 0.01f )
+                if ( _myTab.IsVisible )
                 {
-                    _updatedTimeScale = Time.timeScale;
-                    //Notify( nameof(TimeScale) );
-                    //Notify( nameof(TimeScaleLabel) );
-                    Publish();
-                }
+                    if( Math.Abs( Time.timeScale - _updatedTimeScale ) > 0.01f )
+                    {
+                        _updatedTimeScale = Time.timeScale;
+                        //Notify( nameof(TimeScale) );
+                        //Notify( nameof(TimeScaleLabel) );
+                        Publish();
+                    }
 
-                if ( Application.targetFrameRate != _updatedFps )
-                {
-                    _updatedFps = Application.targetFrameRate;
-                    Publish();
+                    if ( Application.targetFrameRate != _updatedFps )
+                    {
+                        _updatedFps = Application.targetFrameRate;
+                        Publish();
+                    }
                 }
 
                 await Task.Delay( 100, cancel );

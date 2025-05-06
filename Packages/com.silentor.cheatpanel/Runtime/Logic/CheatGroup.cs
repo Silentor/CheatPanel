@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Silentor.CheatPanel.UI;
 using UnityEngine.UIElements;
 
 namespace Silentor.CheatPanel

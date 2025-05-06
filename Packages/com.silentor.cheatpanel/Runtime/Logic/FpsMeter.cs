@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Rendering;
 using Object = System.Object;
-using Screen = UnityEngine.Device.Screen;
-using SystemInfo = UnityEngine.Device.SystemInfo;
-using Application = UnityEngine.Device.Application;
-using Debug = UnityEngine.Debug;
 
 
 namespace Silentor.CheatPanel
@@ -31,6 +25,10 @@ namespace Silentor.CheatPanel
 
         public Stats CurrentStats { get; private set; }
 
+        public IReadOnlyCollection<Stats> LastStats => _lastStats; 
+
+        public Int32 LastStatsCapacity => _lastStatsCapacity;
+
         /// <summary>
         /// When stats updated
         /// </summary>
@@ -39,6 +37,7 @@ namespace Silentor.CheatPanel
         public FpsMeter( )
         {
             _deltaTimes = new NativeList<Single>(Allocator.Persistent );
+            _lastStats = new Queue<Stats>( _lastStatsCapacity );
         }
 
         public void StartMeter( )
@@ -63,6 +62,9 @@ namespace Silentor.CheatPanel
                     _measureTime -= (int)_measureTime;
                     BurstHelper.GetStats( in _deltaTimes, out var averageFrame, out var worstFrame, out var percentile99Frame, out var percentile95Frame, out var percentile90Frame );
                     CurrentStats = new Stats(averageFrame, worstFrame, percentile99Frame, percentile95Frame, percentile90Frame);
+                    if( LastStats.Count > 60 )                        
+                        _lastStats.Dequeue();
+                    _lastStats.Enqueue( CurrentStats );
                     _deltaTimes.Clear();
                     Updated?.Invoke( this );
                 }
@@ -78,6 +80,8 @@ namespace Silentor.CheatPanel
         private float _measureTime;
         private          CancellationTokenSource _cancel;
         private         NativeList<float> _deltaTimes;
+        private Int32   _lastStatsCapacity = 60;
+        private readonly Queue<Stats> _lastStats;
 
         public void Dispose( )
         {
@@ -102,7 +106,30 @@ namespace Silentor.CheatPanel
                 Percentile95FrameTime = percentile95FrameTime;
                 Percentile90FrameTime = percentile90FrameTime;
             }
+
+            public float GetStat( EFPSStats stat )
+            {
+                return stat switch
+                {
+                    EFPSStats.Average => AverageFrameTime,
+                    EFPSStats.Worst   => WorstFrameTime,
+                    EFPSStats.Percent99 => Percentile99FrameTime,
+                    EFPSStats.Percent95 => Percentile95FrameTime,
+                    EFPSStats.Percent90 => Percentile90FrameTime,
+                    _ => 0
+                };
+            }
         } 
+
+        public enum EFPSStats
+        {
+            Average,
+            Worst,
+            Percent99,
+            Percent95,
+            Percent90,
+        }
+
 
         [BurstCompile]
         private static class BurstHelper

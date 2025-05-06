@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine.UIElements;
 
-namespace Silentor.CheatPanel
+namespace Silentor.CheatPanel.UI
 {
     [UxmlElement]
     public partial class CheatGroupControl: VisualElement
