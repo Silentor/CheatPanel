@@ -50,13 +50,12 @@ namespace Silentor.CheatPanel
         private          UIDocument                  _doc;
         private          SettingsDTO                 _settings;
         private          Settings                    _settingsManager;
-        private          float                       _updatedTimeScale = -1f;
-        private          int                         _updatedFps       = -2;
         private          FpsMeter                    _fpsMeter;
         private readonly List<CheatTab>              _tabs = new();
         private          CheatTab                    _selectedTab;
         private          Label                       _resultLbl;
         private          IVisualElementScheduledItem _resultTransitionTask;
+        private SystemTab _systemTab;
 
         private const String TabViewResultUssClassName = "TabView__result";
         private const String TabViewResultShowUssClassName = TabViewResultUssClassName + "--show";
@@ -70,8 +69,9 @@ namespace Silentor.CheatPanel
             _fpsMeter        = new FpsMeter();
             _fpsMeter.StartMeter();
 
+            _systemTab = new SystemTab( _fpsMeter );
             var systemTab = new CheatTab("System", destroyCancellationToken ) ;
-            systemTab.PredefinedCheats.Add( CreateSystemTabPredefinedContent() );
+            systemTab.PredefinedCheats.Add( _systemTab.CreateContent( ) );
             _tabs.Add( systemTab );
             _selectedTab = systemTab;
             
@@ -81,6 +81,7 @@ namespace Silentor.CheatPanel
         private void OnDestroy( )
         {
             _fpsMeter.Dispose();
+            _systemTab.Dispose();
         }
 
         private void ShowPanel( )
@@ -125,58 +126,6 @@ namespace Silentor.CheatPanel
             ShowPanel();
         }
 
-        private VisualElement CreateSystemTabPredefinedContent( )
-        {
-            var instance = Resources.SystemTab.Instantiate( );
-
-            var sysInfoBox       = instance.Q<VisualElement>( "DeviceInfo" );
-            var sysInfoLabel     = sysInfoBox.Q<Label>( "DeviceInfoValue" );
-            var expandSysInfoBtn = sysInfoBox.Q<Button>( "ExpandBtn" );
-            expandSysInfoBtn.clicked += ( ) => ExpandSysInfoOnClicked( sysInfoLabel, expandSysInfoBtn );
-
-            var timescaleBox = instance.Q<VisualElement>( "TimeScale" );
-            var timescaleLabel = timescaleBox.Q<Label>( "TimeScaleLbl" );
-            var timescaleSlider = timescaleBox.Q<Slider>( "TimeScaleSlider" );
-            timescaleSlider.RegisterValueChangedCallback( evt => Time.timeScale = evt.newValue );
-            timescaleBox.Q<Button>( "TS_0" ).clicked   += ( ) => Time.timeScale = 0;
-            timescaleBox.Q<Button>( "TS_0-1" ).clicked += ( ) => Time.timeScale = 0.1f;
-            timescaleBox.Q<Button>( "TS_1" ).clicked   += ( ) => Time.timeScale = 1;
-            _updatedTimeScale  =  -1;                                           //To force update
-            timescaleBox.schedule.Execute( () =>
-            {
-                if( Math.Abs( Time.timeScale - _updatedTimeScale ) > 0.01f )
-                {
-                    _updatedTimeScale   = Time.timeScale;
-                    timescaleLabel.text = $"TimeScale: {_updatedTimeScale:0.#}";
-                    timescaleSlider.SetValueWithoutNotify( _updatedTimeScale );
-                }
-            } ).Every( 100 );
-
-            var fpsBox = instance.Q<VisualElement>( "FPS" );
-            var fpsStatsLbl = fpsBox.Q<Label>( "FPSStatsLbl" );
-            var fpsSlider = fpsBox.Q<Slider>( "FPSSlider" );
-            var fpsTargetLbl = fpsBox.Q<Label>( "TargetFPS" );
-            fpsSlider.RegisterValueChangedCallback( evt => Application.targetFrameRate = (int)evt.newValue );
-            // Mobile oriented controls
-            fpsBox.Q<Button>( "FPS_X" ).clicked += () => Application.targetFrameRate = -1;
-            fpsBox.Q<Button>( "FPS_15" ).clicked += () => Application.targetFrameRate = 15;
-            fpsBox.Q<Button>( "FPS_30" ).clicked += () => Application.targetFrameRate = 30;
-            fpsBox.Q<Button>( "FPS_60" ).clicked += () => Application.targetFrameRate = 60;
-            fpsStatsLbl.schedule.Execute( () => fpsStatsLbl.text = GetFPSStats() ).Every( 1000 );
-            fpsBox.schedule.Execute( ( ) =>
-            {
-                if ( Application.targetFrameRate != _updatedFps )
-                {
-                    _updatedFps = Application.targetFrameRate;
-                    fpsSlider.SetValueWithoutNotify( _updatedFps );
-                    fpsTargetLbl.text = $"FPS: {_updatedFps}";
-                }
-            } ).Every( 100 );
-            //todo add desktop controls (vSync)
-
-            return instance;
-        }
-
         private void AddTab( VisualElement cheatTabView, VisualElement contentContainer, CheatTab tab )
         {
             var tabBtnContainer = cheatTabView.Q<VisualElement>( "TabsScroll" );
@@ -210,54 +159,8 @@ namespace Silentor.CheatPanel
             SelectTab( contentContainer, selectedTab );
         }
 
-        private void ExpandSysInfoOnClicked( Label deviceInfoLabel, Button expandSysInfoBtn )
-        {
-            var wasExpanded = deviceInfoLabel.style.display == DisplayStyle.Flex;
-            if ( wasExpanded )
-            {
-                deviceInfoLabel.style.display = DisplayStyle.None;
-                expandSysInfoBtn.text = "Expand";
-            }
-            else
-            {
-                deviceInfoLabel.style.display = DisplayStyle.Flex;
-                expandSysInfoBtn.text         = "Collapse";
-                deviceInfoLabel.text          = GetDeviceAndAppInfo();
-            }
-            
-        }
-
-        private string GetFPSStats( )
-        {
-            return $"FPS avg {_fpsMeter.AverageFPS}, 90% {_fpsMeter.Percentile90FPS}, 99% {_fpsMeter.Percentile99FPS}";
-        }
-
-        private string GetDeviceAndAppInfo( )
-        {
-            var deviceInfo = $"Device: {SystemInfo.deviceModel}\n"            +
-                             $"CPU: {SystemInfo.processorType}\n"             +
-                             $"GPU: {SystemInfo.graphicsDeviceName}\n"        +
-                             $"Name: {SystemInfo.deviceName}\n"               +
-                             $"DUID: {SystemInfo.deviceUniqueIdentifier}\n"   +
-                             $"OS: {SystemInfo.operatingSystem}\n"            +
-                             //GetApplicationId() +
-                             $"App Version: {Application.version}\n"          +
-                             $"Lang: {Application.systemLanguage}\n"          +
-                             $"Unity: {Application.unityVersion}\n"           +
-                             $"Pers path: {Application.persistentDataPath}\n" +
-                             $"Screen res: {Screen.currentResolution}\n"      +
-                             $"DPI: {Screen.dpi}\n";
-
-            return deviceInfo;
-        }
-
-        private String GetApplicationId( )
-        {
-#if UNITY_ANDROID || UNITY_IOS || UNITY_TVOS || UNITY_STANDALONE_OSX
-                return $"App id {Application.identifier}\n";
-#endif
-            return String.Empty;
-        }
+        
+        
 
         private void AddCheatsInternal( ICheats cheats )
         {

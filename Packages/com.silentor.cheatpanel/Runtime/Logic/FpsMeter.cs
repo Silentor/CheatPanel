@@ -18,17 +18,23 @@ namespace Silentor.CheatPanel
 {
     public class FpsMeter : IDisposable
     {
-        public float    AverageFrameTime => _averageFrame;
-        public int      AverageFPS => _averageFrame > 0 ? (int)Math.Round(1 / _averageFrame) : 0;
-        public float    SlowestFrameTime => _slowestFrame;
-        public int      SlowestFPS => _slowestFrame > 0 ? (int)Math.Round(1 / _slowestFrame) : 0;
-        public float    Percentile99FrameTime => _percentile99Frame;
-        public int      Percentile99FPS       => _percentile99Frame > 0 ? (int)Math.Round(1 / _percentile99Frame) : 0;
-        public float    Percentile95FrameTime => _percentile95Frame;
-        public int      Percentile95FPS       => _percentile95Frame > 0 ? (int)Math.Round(1 / _percentile95Frame) : 0;
-        public float    Percentile90FrameTime => _percentile90Frame;
-        public int      Percentile90FPS       => _percentile90Frame > 0 ? (int)Math.Round(1 / _percentile90Frame) : 0;
+        public float    AverageFrameTime => CurrentStats.AverageFrameTime;
+        public int      AverageFPS => AverageFrameTime > 0 ? (int)Math.Round(1 / AverageFrameTime) : 0;
+        public float    WorstFrameTime => CurrentStats.WorstFrameTime;
+        public int      WorsttFPS => WorstFrameTime > 0 ? (int)Math.Round(1 / WorstFrameTime) : 0;
+        public float    Percentile99FrameTime => CurrentStats.Percentile99FrameTime;
+        public int      Percentile99FPS       => Percentile99FrameTime > 0 ? (int)Math.Round(1 / Percentile99FrameTime) : 0;
+        public float    Percentile95FrameTime => CurrentStats.Percentile95FrameTime;
+        public int      Percentile95FPS       => Percentile95FrameTime > 0 ? (int)Math.Round(1 / Percentile95FrameTime) : 0;
+        public float    Percentile90FrameTime => CurrentStats.Percentile90FrameTime;
+        public int      Percentile90FPS       => Percentile90FrameTime > 0 ? (int)Math.Round(1 / Percentile90FrameTime) : 0;
 
+        public Stats CurrentStats { get; private set; }
+
+        /// <summary>
+        /// When stats updated
+        /// </summary>
+        public event Action<FpsMeter> Updated; 
 
         public FpsMeter( )
         {
@@ -48,15 +54,17 @@ namespace Silentor.CheatPanel
             _cancel?.Cancel();
         }
 
-        private async Awaitable Update( CancellationToken cancel )
+        private async void Update( CancellationToken cancel )
         {
             while ( !cancel.IsCancellationRequested )
             {
                 if ( (int)_measureTime > 0 )
                 {
                     _measureTime -= (int)_measureTime;
-                    BurstHelper.GetStats( in _deltaTimes, out _averageFrame, out _slowestFrame, out _percentile99Frame, out _percentile95Frame, out _percentile90Frame );
+                    BurstHelper.GetStats( in _deltaTimes, out var averageFrame, out var worstFrame, out var percentile99Frame, out var percentile95Frame, out var percentile90Frame );
+                    CurrentStats = new Stats(averageFrame, worstFrame, percentile99Frame, percentile95Frame, percentile90Frame);
                     _deltaTimes.Clear();
+                    Updated?.Invoke( this );
                 }
 
                 var dt = Time.unscaledDeltaTime;
@@ -68,11 +76,6 @@ namespace Silentor.CheatPanel
         }
 
         private float _measureTime;
-        private float _slowestFrame;
-        private float _averageFrame;
-        private float _percentile99Frame;
-        private float _percentile95Frame;
-        private float _percentile90Frame;
         private          CancellationTokenSource _cancel;
         private         NativeList<float> _deltaTimes;
 
@@ -82,6 +85,24 @@ namespace Silentor.CheatPanel
             _cancel?.Dispose();
             _deltaTimes.Dispose();
         }
+
+        public readonly struct Stats
+        {
+            public float AverageFrameTime { get; }
+            public float WorstFrameTime { get; }
+            public float Percentile99FrameTime { get; }
+            public float Percentile95FrameTime { get; }
+            public float Percentile90FrameTime { get; }
+
+            public Stats(Single averageFrameTime, Single worstFrameTime, Single percentile99FrameTime, Single percentile95FrameTime, Single percentile90FrameTime )
+            {
+                AverageFrameTime = averageFrameTime;
+                WorstFrameTime = worstFrameTime;
+                Percentile99FrameTime = percentile99FrameTime;
+                Percentile95FrameTime = percentile95FrameTime;
+                Percentile90FrameTime = percentile90FrameTime;
+            }
+        } 
 
         [BurstCompile]
         private static class BurstHelper
