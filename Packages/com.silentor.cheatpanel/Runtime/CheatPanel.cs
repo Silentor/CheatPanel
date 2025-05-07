@@ -69,11 +69,12 @@ namespace Silentor.CheatPanel
             _fpsMeter        = new FpsMeter();
             _fpsMeter.StartMeter();
 
-            var systemTab = new CheatTab("System", destroyCancellationToken ) ;
-            _systemTab = new SystemTab( _fpsMeter, systemTab, _settingsManager );
-            systemTab.PredefinedCheats.Add( _systemTab.CreateContent( ) );
-            _tabs.Add( systemTab );
-            _selectedTab = systemTab;
+            _systemTab = new SystemTab( _fpsMeter, _settingsManager );
+            _tabs.Add( _systemTab );
+
+            //var logTab = new CheatTab( "Log", destroyCancellationToken );
+
+            _selectedTab = _systemTab;
             
             ShowPanel( );
         }
@@ -81,7 +82,9 @@ namespace Silentor.CheatPanel
         private void OnDestroy( )
         {
             _fpsMeter.Dispose();
-            _systemTab.Dispose();
+
+            foreach ( var cheatTab in _tabs )                
+                cheatTab.Dispose();
         }
 
         private void ShowPanel( )
@@ -176,7 +179,7 @@ namespace Silentor.CheatPanel
 
                 if ( Cheat.IsValidCheat( member ) )
                 {
-                    var cheat           = Cheat.CreateCheat( member, cheats, this, destroyCancellationToken );
+                    var cheat           = Cheat.CreateCheat( member, cheats, this );
                     if( cheat == null )         //Still not valid, ignore
                         continue;
 
@@ -194,7 +197,7 @@ namespace Silentor.CheatPanel
             var tab = _tabs.FirstOrDefault( t => t.Name == tabName );
             if ( tab == null )
             {
-                tab = new CheatTab( tabName, destroyCancellationToken );
+                tab = new CheatTab( tabName );
                 _tabs.Add( tab );
             }
 

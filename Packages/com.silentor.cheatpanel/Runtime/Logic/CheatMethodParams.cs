@@ -20,7 +20,7 @@ namespace Silentor.CheatPanel
         private          IReadOnlyList<CheatFieldBinderBase> _paramsWrappers;
         private          Object[]                    _params;
 
-        public CheatMethodParams( MethodInfo methodInfo, ICheats cheatObject, CheatPanel cheatPanel, CancellationToken cancel ) : base( methodInfo, cheatObject, cancel )
+        public CheatMethodParams( MethodInfo methodInfo, ICheats cheatObject, CheatPanel cheatPanel ) : base( methodInfo, cheatObject )
         {
             _methodInfo      = methodInfo;
             _cheatObject     = cheatObject;

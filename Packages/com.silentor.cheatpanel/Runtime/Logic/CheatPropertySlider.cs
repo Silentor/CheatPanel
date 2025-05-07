@@ -11,7 +11,7 @@ namespace Silentor.CheatPanel
 {
     public class CheatPropertySlider : Cheat
     {
-        public CheatPropertySlider( PropertyInfo cheatProperty, RangeAttribute rangeAttr, ICheats cheatObject, CancellationToken cancel ): base( cheatProperty, cheatObject, cancel )
+        public CheatPropertySlider( PropertyInfo cheatProperty, RangeAttribute rangeAttr, ICheats cheatObject ): base( cheatProperty, cheatObject )
         {
             Assert.IsTrue( cheatProperty.CanRead || cheatProperty.CanWrite );
 

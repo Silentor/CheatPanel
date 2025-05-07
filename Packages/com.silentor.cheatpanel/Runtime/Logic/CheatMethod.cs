@@ -13,7 +13,7 @@ namespace Silentor.CheatPanel
         private readonly ICheats    _cheatObject;
         private readonly CheatPanel _cheatPanel;
 
-        public CheatMethod( MethodInfo methodInfo, ICheats cheatObject, CheatPanel cheatPanel, CancellationToken cancel ) : base( methodInfo, cheatObject, cancel )
+        public CheatMethod( MethodInfo methodInfo, ICheats cheatObject, CheatPanel cheatPanel ) : base( methodInfo, cheatObject )
         {
             _methodInfo      = methodInfo;
             _cheatObject     = cheatObject;

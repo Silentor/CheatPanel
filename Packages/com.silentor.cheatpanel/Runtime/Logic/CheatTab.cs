@@ -8,20 +8,18 @@ using UnityEngine.UIElements;
 
 namespace Silentor.CheatPanel
 {
-    public class CheatTab
+    public class CheatTab : IDisposable
     {
         public readonly  string     Name;
 
         public readonly  Button              CheatTabButton;
-        public readonly  List<VisualElement> PredefinedCheats = new();
         public readonly  List<CheatGroup>    CheatsGroups     = new();
 
         public Boolean IsVisible { get; private set; }
 
-        public CheatTab(String name, CancellationToken cancel )
+        public CheatTab( String name )
         {
             Name                = name;
-            _cancel             = cancel;
             CheatTabButton      = new Button();
             CheatTabButton.text = name;
             CheatTabButton.AddToClassList( TabButtonUssClassName );
@@ -72,7 +70,6 @@ namespace Silentor.CheatPanel
         }
 
         private          VisualElement     _contentUI;
-        private readonly CancellationToken _cancel;
         private const    String            TabUssClassName        = "tab";
         private const    String            TabContentUssClassName = "tab__content";
         private const    String            TabButtonUssClassName  = "tab__button";
@@ -82,10 +79,9 @@ namespace Silentor.CheatPanel
             var content = new VisualElement();
             content.AddToClassList( TabContentUssClassName );
 
-            foreach ( var predefinedCheatUI in PredefinedCheats )
-            {
-                content.Add( predefinedCheatUI );
-            }
+            var customContent = GenerateCustomContent( );
+            if( customContent != null )                
+                content.Add( customContent );
 
             foreach ( var cheatGroup in CheatsGroups )
             {
@@ -95,10 +91,24 @@ namespace Silentor.CheatPanel
             return content;
         }
 
+        protected virtual VisualElement GenerateCustomContent( )
+        {
+            return null;
+        }
+
         private void InvalidateUI( )
         {
             _contentUI = null;
         }
-        
+
+        public virtual void Dispose( )
+        {
+            // TODO release managed resources here
+
+            foreach ( var cheatsGroup in CheatsGroups )
+            {
+                cheatsGroup.Dispose();
+            }
+        }
     }
 }

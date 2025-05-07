@@ -12,6 +12,7 @@ using UnityEngine.UIElements;
 using Screen = UnityEngine.Device.Screen;
 using SystemInfo = UnityEngine.Device.SystemInfo;
 using Application = UnityEngine.Device.Application;
+using Object = System.Object;
 
 [assembly: GeneratePropertyBagsForAssembly] 
 
@@ -21,19 +22,18 @@ namespace Silentor.CheatPanel
     /// Controller for System Tab in Cheat Panel
     /// </summary>
     [GeneratePropertyBag]
-    public partial class SystemTab : IDataSourceViewHashProvider, /*INotifyBindablePropertyChanged,*/ IDisposable   //TODO INotifyBindablePropertyChanged doesnt work, investigate
+    public partial class SystemTab : CheatTab, IDataSourceViewHashProvider, /*INotifyBindablePropertyChanged,*/ IDisposable   //TODO INotifyBindablePropertyChanged doesnt work, investigate
     {
         private readonly FpsMeter _fpsMeter;
-        private readonly CheatTab _myTab;
         private readonly Settings _settings;
         private float _lastTImeScale = -1f;
         private int   _lastTargetFps       = -2;
         private Int64 _version;
-        private readonly CancellationTokenSource _cancelUpdates;
         private Boolean _updateFPSHistogram = true;
         private FpsMeter.EFPSStats     _FPSHistogramMode = FpsMeter.EFPSStats.Worst;
         private FpsHistogram _histo;
         private FpsMeter.Stats[] _pausedHistogrammData;
+        private Boolean _isDisposed;
 
         [CreateProperty ]
         public float TimeScale
@@ -96,15 +96,13 @@ namespace Silentor.CheatPanel
         }
 
 
-        public SystemTab( FpsMeter fpsMeter, CheatTab myTab, Settings settings )
+        public SystemTab( FpsMeter fpsMeter, Settings settings ) : base ( "System" )
         {
             _fpsMeter = fpsMeter;
-            _myTab = myTab;
             _settings = settings;
-            _cancelUpdates = new CancellationTokenSource();
         }
 
-        public VisualElement CreateContent( )
+        protected override VisualElement GenerateCustomContent( )
         {
             var instance = Resources.Content.Instantiate( );
             instance.dataSource = this;
@@ -128,7 +126,7 @@ namespace Silentor.CheatPanel
             _histo = fpsBox.Q<FpsHistogram>( "FpsHistogram" );
             _fpsMeter.Updated +=  fpsMeter  =>
             {
-                if ( FPSUpdateHistoMode && _myTab.IsVisible )
+                if ( FPSUpdateHistoMode && IsVisible )
                 {
                     //var timer = Stopwatch.StartNew();
                     _histo.SetFPS( fpsMeter.LastStats, fpsMeter.LastStatsCapacity, 1f / OnDemandRendering.effectiveRenderFrameRate, (FpsMeter.EFPSStats)FPSHistoModeIndex );
@@ -143,7 +141,7 @@ namespace Silentor.CheatPanel
 
             //todo add desktop controls (vSync)
 
-            CheckUpdatesAsync( _cancelUpdates.Token );
+            CheckUpdatesAsync( );
 
             return instance;
         }
@@ -162,10 +160,7 @@ namespace Silentor.CheatPanel
                 expandSysInfoBtn.text         = "Collapse";
                 deviceInfoLabel.text          = GetDeviceAndAppInfo();
             }
-            
         }
-
-        
 
         private string GetDeviceAndAppInfo( )
         {
@@ -198,11 +193,11 @@ namespace Silentor.CheatPanel
         /// Frequently check for updates of some system settings
         /// </summary>
         /// <param name="cancel"></param>
-        private async void CheckUpdatesAsync( CancellationToken cancel )
+        private async void CheckUpdatesAsync( )
         {
-            while ( !cancel.IsCancellationRequested )
+            while ( !_isDisposed )
             {
-                if ( _myTab.IsVisible )
+                if ( IsVisible )
                 {
                     if( Math.Abs( Time.timeScale - _lastTImeScale ) > 0.01f )
                     {
@@ -219,7 +214,7 @@ namespace Silentor.CheatPanel
                     }
                 }
 
-                await Task.Delay( 100, cancel );
+                await Task.Delay( 100, CancellationToken.None );
             }
         }
 
@@ -255,10 +250,11 @@ namespace Silentor.CheatPanel
 
 #region IDisposable
 
-        public void Dispose( )
+        public override void Dispose( )
         {
-            _cancelUpdates.Cancel();
-            _cancelUpdates.Dispose();
+            base.Dispose();
+
+            _isDisposed = true;
             _settings.UpdateSettings();
         }
 

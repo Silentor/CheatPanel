@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Silentor.CheatPanel
 {
-    public class CheatGroup
+    public class CheatGroup : IDisposable
     {
         public readonly string        Name;
         public readonly List<Cheat>   Cheats = new();
@@ -61,6 +61,15 @@ namespace Silentor.CheatPanel
             }
 
             return group;
+        }
+
+        public void Dispose( )
+        {
+            // TODO release managed resources here
+            foreach ( var cheat in Cheats )
+            {
+                cheat.Dispose();
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Silentor.CheatPanel
 {
     public class CheatPropertyField : Cheat
     {
-        public CheatPropertyField( PropertyInfo cheatProperty, ICheats cheatObject, CancellationToken cancel ): base( cheatProperty, cheatObject, cancel )
+        public CheatPropertyField( PropertyInfo cheatProperty, ICheats cheatObject ): base( cheatProperty, cheatObject )
         {
             Assert.IsTrue( cheatProperty.CanRead || cheatProperty.CanWrite );
 

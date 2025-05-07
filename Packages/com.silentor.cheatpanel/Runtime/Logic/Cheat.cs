@@ -13,7 +13,7 @@ namespace Silentor.CheatPanel
     /// <summary>
     /// Wrapper for cheat instance
     /// </summary>
-    public abstract class Cheat
+    public abstract class Cheat : IDisposable
     {
         public readonly String Name;
         public readonly String TabName;
@@ -21,36 +21,35 @@ namespace Silentor.CheatPanel
         
         public readonly  ICheats    CheatObject;
 
-        public static Cheat CreateCheat( MemberInfo cheatMember, ICheats cheatObject, CheatPanel cheatPanel, CancellationToken cancel )
+        public static Cheat CreateCheat( MemberInfo cheatMember, ICheats cheatObject, CheatPanel cheatPanel )
         {
             if( cheatMember is PropertyInfo cheatProperty )
             {
                 var rangeAttr = cheatProperty.GetCustomAttribute<RangeAttribute>();
                 if( rangeAttr == null )
                 {
-                    return new CheatPropertyField( cheatProperty, cheatObject, cancel );
+                    return new CheatPropertyField( cheatProperty, cheatObject );
                 }
                 else
                 {
-                    return new CheatPropertySlider( cheatProperty, rangeAttr, cheatObject, cancel );
+                    return new CheatPropertySlider( cheatProperty, rangeAttr, cheatObject );
                 }
             }
             else if( cheatMember is MethodInfo cheatMethod )
             {
                 if( cheatMethod.GetParameters().Length == 0 )
-                    return new CheatMethod( cheatMethod, cheatObject, cheatPanel, cancel );
+                    return new CheatMethod( cheatMethod, cheatObject, cheatPanel );
                 else
-                    return new CheatMethodParams( cheatMethod, cheatObject, cheatPanel, cancel );
+                    return new CheatMethodParams( cheatMethod, cheatObject, cheatPanel );
             }
 
             return null;
         }
 
-        protected Cheat(   MemberInfo cheatMember, ICheats cheatObject, CancellationToken cancel )
+        protected Cheat(   MemberInfo cheatMember, ICheats cheatObject )
         {
             _cheatMember = cheatMember;
             CheatObject  = cheatObject;
-            _cancel      = cancel;
 
             Attr = cheatMember.GetCustomAttribute<CheatAttribute>( );
             if ( Attr != null )
@@ -101,9 +100,10 @@ namespace Silentor.CheatPanel
             return false;
         }
 
-        protected readonly CheatAttribute    Attr;
+        protected readonly  CheatAttribute    Attr;
+        protected           Boolean IsDisposed;
+
         private            VisualElement     _ui;
-        private readonly   CancellationToken _cancel;
         private            bool              _isRefreshFieldExceptionReported;
         private readonly   CheatPanel        _cheatPanel;
         private readonly   MemberInfo        _cheatMember;
@@ -137,15 +137,15 @@ namespace Silentor.CheatPanel
             }
             else if( refreshTime.Type == ERefreshUIType.Loop )
             {
-                RefreshUILoop( refreshTime.Time, _cancel );
+                RefreshUILoop( refreshTime.Time );
             }
 
             return ui;
         }
 
-        private async void RefreshUILoop( float refreshTime, CancellationToken cancel )
+        private async void RefreshUILoop( float refreshTime )
         {
-            while ( !cancel.IsCancellationRequested )
+            while ( !IsDisposed )
             {
                 try
                 {
@@ -162,9 +162,9 @@ namespace Silentor.CheatPanel
                 }
 
                 if ( refreshTime > 0 )
-                    await Task.Delay( TimeSpan.FromSeconds( refreshTime ), cancel );
+                    await Task.Delay( TimeSpan.FromSeconds( refreshTime ), CancellationToken.None);
                 else
-                    await Awaitable.NextFrameAsync( cancel );
+                    await Awaitable.NextFrameAsync( CancellationToken.None );
             }
         }
 
@@ -201,6 +201,12 @@ namespace Silentor.CheatPanel
                 Type = mode;
                 Time = Math.Max( time, 0f );
             }
+        }
+
+        public void Dispose( )
+        {
+            // TODO release managed resources here
+            IsDisposed = true;
         }
     }
 }

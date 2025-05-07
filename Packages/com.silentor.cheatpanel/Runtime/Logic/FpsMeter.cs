@@ -42,20 +42,23 @@ namespace Silentor.CheatPanel
 
         public void StartMeter( )
         {
+            if( _isMeasuring )
+                return;
+
             _deltaTimes.Clear();
             _measureTime = Time.unscaledTime;
-            _cancel      = new CancellationTokenSource();
-            Update( _cancel.Token );
+            _isMeasuring = true;
+            Update(  );
         }
 
         public void StopMeter( )
         {
-            _cancel?.Cancel();
+            _isMeasuring = false;
         }
 
-        private async void Update( CancellationToken cancel )
+        private async void Update(  )
         {
-            while ( !cancel.IsCancellationRequested )
+            while ( _isMeasuring )
             {
                 if ( (int)_measureTime > 0 )
                 {
@@ -73,20 +76,19 @@ namespace Silentor.CheatPanel
                 _deltaTimes.Add( dt );
                 _measureTime += dt;
 
-                await Awaitable.NextFrameAsync( cancel );
+                await Awaitable.NextFrameAsync( CancellationToken.None );
             }
         }
 
         private float _measureTime;
-        private          CancellationTokenSource _cancel;
         private         NativeList<float> _deltaTimes;
         private Int32   _lastStatsCapacity = 60;
         private readonly Queue<Stats> _lastStats;
+        private Boolean _isMeasuring; 
 
         public void Dispose( )
         {
             StopMeter();
-            _cancel?.Dispose();
             _deltaTimes.Dispose();
         }
 
