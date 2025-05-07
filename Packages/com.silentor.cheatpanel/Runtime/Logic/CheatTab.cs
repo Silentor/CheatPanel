@@ -11,7 +11,6 @@ namespace Silentor.CheatPanel
     public class CheatTab
     {
         public readonly  string     Name;
-        
 
         public readonly  Button              CheatTabButton;
         public readonly  List<VisualElement> PredefinedCheats = new();

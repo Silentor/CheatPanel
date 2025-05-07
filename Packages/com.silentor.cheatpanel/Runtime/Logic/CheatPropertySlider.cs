@@ -39,7 +39,6 @@ namespace Silentor.CheatPanel
                 return null;                            //Incompatible cheat property type, ignore cheat
 
             slider.AddToClassList( "CheatLine" );
-            slider.AddToClassList( "CheatSlider" );
             return slider;
         }
 

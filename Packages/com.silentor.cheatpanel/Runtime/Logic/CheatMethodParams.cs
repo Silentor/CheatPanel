@@ -74,80 +74,67 @@ namespace Silentor.CheatPanel
                 if( par.ParameterType == typeof(int) )
                 {
                     var field = new IntegerField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (int)par.DefaultValue : 0 ) );
                 }
                 else if( par.ParameterType == typeof(uint) )
                 {
                     var field = new UnsignedIntegerField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (uint)par.DefaultValue : 0 ) );
                 }
                 else if( par.ParameterType == typeof(long) )
                 {
                     var field = new LongField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (long)par.DefaultValue : 0 ) );
                 }
                 else if( par.ParameterType == typeof(ulong) )
                 {
                     var field = new UnsignedLongField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (ulong)par.DefaultValue : 0 ) );
                 }
                 else if( par.ParameterType == typeof(byte) )
                 {
                     var field = new IntegerField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (byte)par.DefaultValue : 0, i => i.ClampToUInt8() ) );
                 }
                 else if( par.ParameterType == typeof(sbyte) )
                 {
                     var field = new IntegerField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (sbyte)par.DefaultValue : 0, i => i.ClampToInt8() ) );
                 }
                 else if( par.ParameterType == typeof(ushort) )
                 {
                     var field = new IntegerField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (ushort)par.DefaultValue : 0, i => i.ClampToUInt16() ) );
                 }
                 else if( par.ParameterType == typeof(short) )
                 {
                     var field = new IntegerField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (short)par.DefaultValue : 0, i => i.ClampToInt16() ) );
                 }
                 else if( par.ParameterType == typeof( float ) )
                 {
                     var field = new FloatField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (float)par.DefaultValue : 0 ) );
                 }
                 else if( par.ParameterType == typeof( double ) )
                 {
                     var field = new DoubleField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (double)par.DefaultValue : 0 ) );
                 }
                 else if( par.ParameterType == typeof( string ) )
                 {
                     var field = new TextField( null );
-                    field.AddToClassList( "CheatTextBox" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (String)par.DefaultValue : String.Empty ) );
                 }
                 else if( par.ParameterType == typeof( bool ) )
                 {
                     var field = new Toggle( null );
-                    field.AddToClassList( "CheatToggle" );
                     result.Add( PrepareWrapper( field, par.HasDefaultValue ? (Boolean)par.DefaultValue : false ) );
                 }
                 else if( par.ParameterType.IsEnum )
                 {
                     var value = (Enum)(par.HasDefaultValue ? par.DefaultValue : par.ParameterType.GetEnumValues().GetValue(0));
                     var field = new EnumField( null, value );
-                    field.AddToClassList( "CheatEnum" );
                     result.Add( PrepareWrapper( field, value ) );
                 }
                 else

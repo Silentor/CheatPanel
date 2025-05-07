@@ -17,14 +17,6 @@
     border-color: var(--unity-colors-button-border-pressed);
 }
 
-.CheatLine {
-    flex-direction: row;
-    min-height: 20px;
-    max-height: 20px;
-    margin-top: 2px;
-    margin-top: 2px;
-}
-
 .CheatLabel {
     margin-top: 0;
     margin-right: 1px;
@@ -34,34 +26,6 @@
     margin-left: 1px;
     padding-right: 1px;
     padding-left: 1px;
-}
-
-.CheatTextBox {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-.CheatEnum {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-.CheatEnum > .unity-enum-field__input {
-    padding: 0;
-}
-
-.CheatSlider {
-}
-
-.CheatSlider > .unity-base-slider__input {
-    min-width: 100px;
-}
-
-.CheatToggle {
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: 0;
-    margin-bottom: 0;
 }
 
 .TabView {
@@ -134,15 +98,15 @@
     min-width: initial;
     margin: 1px;
     padding: 1px;
+    margin-top: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
 .unity-base-field__input {
     flex-direction: row;
-}
-
-.unity-label {
-    margin: 0 1px;
-    padding: 0 1px;
+    min-width: 20px;
 }
 
 .unity-base-slider__dragger {
@@ -154,8 +118,12 @@
     height: 16px;
 }
 
+.unity-base-slider__input {
+    min-width: 70px;
+}
+
 .unity-base-slider--horizontal {
-    min-height: 18px;
+    min-height: auto;
 }
 
 .unity-toggle__input {
@@ -165,10 +133,6 @@
 .unity-toggle__checkmark {
     width: 18px;
     height: 18px;
-}
-
-.unity-toggle__label {
-    padding: 0;
 }
 
 .unity-base-text-field__input {
@@ -185,7 +149,14 @@
     padding-left: 1px;
 }
 
-.unity-composite-field__field{
+.unity-enum-field__input {
+    padding-top: 1px;
+    padding-right: 1px;
+    padding-bottom: 1px;
+    padding-left: 1px;
+}
+
+.unity-composite-field__field {
     margin: 0;
     padding: 1px;
 }
@@ -194,18 +165,17 @@
     flex-direction: row;
 }
 
-.unity-bounds-field .unity-composite-field .unity-base-field__label{
+.unity-bounds-field .unity-composite-field .unity-base-field__label {
     font-size: 10px;
     -unity-text-align: middle-right;
 }
 
-.unity-bounds-int-field .unity-composite-field .unity-base-field__label{
+.unity-bounds-int-field .unity-composite-field .unity-base-field__label {
     font-size: 10px;
     -unity-text-align: middle-right;
 }
 
-
-.unity-composite-field__input .unity-base-field__label{
+.unity-composite-field__input .unity-base-field__label {
     font-size: 10px;
     -unity-text-align: middle-right;
 }

@@ -123,11 +123,11 @@ namespace Silentor.CheatPanel
 
         public enum EFPSStats
         {
-            Average,
             Worst,
             Percent99,
             Percent95,
             Percent90,
+            Average,
         }
 
 
