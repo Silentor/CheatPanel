@@ -90,7 +90,7 @@ namespace Silentor.CheatPanel
                         var propType = propertyInfo.PropertyType;
                         if( propType.IsPrimitive || propType == typeof( string ) || propType == typeof(Vector2) || propType == typeof(Vector3) || propType == typeof(Vector4)
                             || propType == typeof(Vector3Int) || propType == typeof(Vector2Int) || propType == typeof(Rect) || propType == typeof(Bounds)
-                            || propType == typeof(RectInt) || propType == typeof(BoundsInt) || propType.IsEnum )
+                            || propType == typeof(RectInt) || propType == typeof(BoundsInt) || propType.IsEnum || propType == typeof(Color))
                         {
                             return true;
                         }
@@ -157,7 +157,7 @@ namespace Silentor.CheatPanel
                     if( !_isRefreshFieldExceptionReported )
                     {
                         _isRefreshFieldExceptionReported = true;
-                        Debug.LogError( $"[Cheat]-[RefreshUILoop] Cheat {ToString()} refresh UI exception: {e.Message}" );
+                        Debug.LogError( $"[Cheat]-[RefreshUILoop] Cheat {ToString()} refresh UI exception: {e}" );
                     }
                 }
 

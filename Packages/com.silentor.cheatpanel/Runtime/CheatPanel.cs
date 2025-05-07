@@ -177,7 +177,7 @@ namespace Silentor.CheatPanel
                 if ( Cheat.IsValidCheat( member ) )
                 {
                     var cheat           = Cheat.CreateCheat( member, cheats, this, destroyCancellationToken );
-                    if( cheat == null )         //Still not valid
+                    if( cheat == null )         //Still not valid, ignore
                         continue;
 
                     var tabNameForCheat = cheat.TabName ?? defaultTabName;

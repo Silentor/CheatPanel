@@ -1,0 +1,28 @@
+.mini-color-field .unity-base-field__label{
+    min-width: auto;
+}
+
+.mini-color-field__input {
+    flex-direction: row;
+}
+
+.mini-color-field__sample {
+    flex-grow: 1;
+}
+
+#RedValue .unity-base-field__label{
+    color: red;
+}
+#GreenValue .unity-base-field__label{
+    color: limegreen;
+}
+#BlueValue .unity-base-field__label{
+    color: blue;
+}
+
+#Sample {
+    background-color: white;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    min-width: 20px;
+}

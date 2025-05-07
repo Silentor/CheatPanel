@@ -131,6 +131,7 @@ namespace Silentor.CheatPanel.DevProject
         public RectInt   RectIntCheat   { get; set; }
         public BoundsInt BoundsIntCheat { get; set; }
         public EasingMode EnumCheat { get; set; }
+        public Color ColorCheat { get; set; } = Color.magenta;
 
         //
         // [Cheat("Resources", TabName = "Resources")]

@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Threading;
 using Silentor.CheatPanel.Binders;
+using Silentor.CheatPanel.UI;
 using Silentor.CheatPanel.Utils;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -181,6 +182,13 @@ namespace Silentor.CheatPanel
                 _cheatFieldBinder = new PropertySimpleBinder<BoundsInt>( field, _cheatProperty, _cheatObject );
                 return field;
             }
+            else if ( propType == typeof(Color) )
+            {
+                var  field = new MiniColorField( cheatName );
+                StyleField( field );
+                _cheatFieldBinder = new PropertySimpleBinder<Color>( field, _cheatProperty, _cheatObject );
+                return field;
+            }
             else if ( propType.IsEnum )
             {
                 var value = propType.GetEnumValues().GetValue( 0 ); //We need this boxing to init field with values
@@ -189,7 +197,6 @@ namespace Silentor.CheatPanel
                 _cheatFieldBinder = new PropertyEnumBinder( field, _cheatProperty, _cheatObject );
                 return field;
             }
-
 
             return null;
         }
@@ -203,6 +210,11 @@ namespace Silentor.CheatPanel
         protected override RefreshUITiming GetRefreshUITiming( )
         {
             return _refreshTiming;
+        }
+
+        public override String ToString( )
+        {
+            return $"{_cheatObject.GetType().Name} {_cheatProperty} ({GetType().Name})";
         }
 
         private static void StyleField<TField>( TextInputBaseField<TField> field )
