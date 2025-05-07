@@ -38,11 +38,29 @@ namespace Silentor.CheatPanel
             PlayerPrefs.SetString(SettingsKey, jsonSettings);
             PlayerPrefs.Save();
         }
+
     }
 
     [Serializable]
     public class SettingsDTO
     {
         public bool IsMaximized;
+        public int FPSHistogrammMode = (int)FpsMeter.EFPSStats.Worst;
+        public bool UpdateFPSHistogramm = true;
+
+        public TEnum GetEnumValueSafe<TEnum>( int value ) where TEnum : Enum
+        {
+            if ( Enum.IsDefined( typeof(TEnum), value ) )
+                return (TEnum)Enum.ToObject( typeof(TEnum), value );
+
+            return (TEnum)Enum.ToObject( typeof(TEnum), Enum.GetValues( typeof(TEnum) ).GetValue( 0 ) );
+        } 
+
+        public FpsMeter.EFPSStats GetFPSHistogrammMode( )
+        {
+            return GetEnumValueSafe<FpsMeter.EFPSStats>( FPSHistogrammMode );
+        }
+
+
     }
 }

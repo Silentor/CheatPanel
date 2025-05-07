@@ -70,7 +70,7 @@ namespace Silentor.CheatPanel
             _fpsMeter.StartMeter();
 
             var systemTab = new CheatTab("System", destroyCancellationToken ) ;
-            _systemTab = new SystemTab( _fpsMeter, systemTab );
+            _systemTab = new SystemTab( _fpsMeter, systemTab, _settingsManager );
             systemTab.PredefinedCheats.Add( _systemTab.CreateContent( ) );
             _tabs.Add( systemTab );
             _selectedTab = systemTab;

@@ -25,12 +25,13 @@ namespace Silentor.CheatPanel
     {
         private readonly FpsMeter _fpsMeter;
         private readonly CheatTab _myTab;
-        private float _updatedTimeScale = -1f;
-        private int   _updatedFps       = -2;
+        private readonly Settings _settings;
+        private float _lastTImeScale = -1f;
+        private int   _lastTargetFps       = -2;
         private Int64 _version;
         private readonly CancellationTokenSource _cancelUpdates;
         private Boolean _updateFPSHistogram = true;
-        private int     _FPSHistogramMode = 4;
+        private FpsMeter.EFPSStats     _FPSHistogramMode = FpsMeter.EFPSStats.Worst;
         private FpsHistogram _histo;
         private FpsMeter.Stats[] _pausedHistogrammData;
 
@@ -67,12 +68,13 @@ namespace Silentor.CheatPanel
         }
 
         [CreateProperty]
-        public int FPSHistoModeIndex
+        public Enum FPSHistoModeIndex
         {
             get => _FPSHistogramMode;
             set
             {
-                _FPSHistogramMode = value;
+                _FPSHistogramMode = (FpsMeter.EFPSStats)value;
+                _settings.GetSettings().FPSHistogrammMode = (int)_FPSHistogramMode;
                 if( !FPSUpdateHistoMode )
                     _histo.SetFPS( _pausedHistogrammData, _fpsMeter.LastStatsCapacity, 1f / OnDemandRendering.effectiveRenderFrameRate, (FpsMeter.EFPSStats)FPSHistoModeIndex );
             }
@@ -85,6 +87,7 @@ namespace Silentor.CheatPanel
             set
             {
                 _updateFPSHistogram = value;
+                _settings.GetSettings().UpdateFPSHistogramm = value;
                 if ( !_updateFPSHistogram )
                 {
                     _pausedHistogrammData = _fpsMeter.LastStats.ToArray();
@@ -93,10 +96,11 @@ namespace Silentor.CheatPanel
         }
 
 
-        public SystemTab( FpsMeter fpsMeter, CheatTab myTab )
+        public SystemTab( FpsMeter fpsMeter, CheatTab myTab, Settings settings )
         {
             _fpsMeter = fpsMeter;
             _myTab = myTab;
+            _settings = settings;
             _cancelUpdates = new CancellationTokenSource();
         }
 
@@ -134,6 +138,8 @@ namespace Silentor.CheatPanel
 
                 Publish();
             };
+            _FPSHistogramMode = _settings.GetSettings().GetFPSHistogrammMode();
+            _updateFPSHistogram = _settings.GetSettings().UpdateFPSHistogramm;
 
             //todo add desktop controls (vSync)
 
@@ -198,17 +204,17 @@ namespace Silentor.CheatPanel
             {
                 if ( _myTab.IsVisible )
                 {
-                    if( Math.Abs( Time.timeScale - _updatedTimeScale ) > 0.01f )
+                    if( Math.Abs( Time.timeScale - _lastTImeScale ) > 0.01f )
                     {
-                        _updatedTimeScale = Time.timeScale;
+                        _lastTImeScale = Time.timeScale;
                         //Notify( nameof(TimeScale) );
                         //Notify( nameof(TimeScaleLabel) );
                         Publish();
                     }
 
-                    if ( Application.targetFrameRate != _updatedFps )
+                    if ( Application.targetFrameRate != _lastTargetFps )
                     {
-                        _updatedFps = Application.targetFrameRate;
+                        _lastTargetFps = Application.targetFrameRate;
                         Publish();
                     }
                 }
@@ -253,6 +259,7 @@ namespace Silentor.CheatPanel
         {
             _cancelUpdates.Cancel();
             _cancelUpdates.Dispose();
+            _settings.UpdateSettings();
         }
 
 #endregion

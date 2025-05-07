@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Silentor.CheatPanel.Utils
 {
@@ -53,5 +54,28 @@ namespace Silentor.CheatPanel.Utils
         {
             return (float)Math.Clamp( value, float.MinValue, float.MaxValue );
         }
+
+        // public static TEnum ClampToEnum<TEnum>( this int value ) where TEnum : System.Enum
+        // {
+        //     if ( Enum.IsDefined( typeof(TEnum), value ) )
+        //         return (TEnum)Enum.ToObject( typeof(TEnum), value );
+        //
+        //     if ( Enum.GetUnderlyingType( typeof(TEnum) ) == typeof(int) )
+        //     {
+        //         var values = Enum.GetValues( typeof(TEnum) );
+        //         var minDiff = int.MaxValue;
+        //         foreach ( var enumValue in values )
+        //         {
+        //             var intValue = (int)enumValue;
+        //             var diff = Math.Abs( intValue - value );
+        //             if( diff < minDiff )
+        //             {
+        //                 minDiff = diff;
+        //             }
+        //         }
+        //     }
+        //     
+        //
+        // }
     }
 }

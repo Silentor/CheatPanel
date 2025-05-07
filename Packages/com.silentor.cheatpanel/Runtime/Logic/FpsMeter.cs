@@ -15,7 +15,7 @@ namespace Silentor.CheatPanel
         public float    AverageFrameTime => CurrentStats.AverageFrameTime;
         public int      AverageFPS => AverageFrameTime > 0 ? (int)Math.Round(1 / AverageFrameTime) : 0;
         public float    WorstFrameTime => CurrentStats.WorstFrameTime;
-        public int      WorsttFPS => WorstFrameTime > 0 ? (int)Math.Round(1 / WorstFrameTime) : 0;
+        public int      WorstFPS => WorstFrameTime > 0 ? (int)Math.Round(1 / WorstFrameTime) : 0;
         public float    Percentile99FrameTime => CurrentStats.Percentile99FrameTime;
         public int      Percentile99FPS       => Percentile99FrameTime > 0 ? (int)Math.Round(1 / Percentile99FrameTime) : 0;
         public float    Percentile95FrameTime => CurrentStats.Percentile95FrameTime;

@@ -49,11 +49,11 @@
             </ui:VisualElement>
             <ui:VisualElement name="HistogramSettings" class="CheatLine" style="flex-grow: 1;">
                 <ui:Label text="Draw FPS" class="CheatLabel" />
-                <ui:DropdownField choices="Avg,Worst,99%,95%,90%" index="4" name="FPSHistoMode">
+                <ui:EnumField value="Center" type="Silentor.CheatPanel.FpsMeter+EFPSStats, Silentor.CheatPanel" name="FPSHistoMode">
                     <Bindings>
-                        <ui:DataBinding property="index" data-source-path="FPSHistoModeIndex" binding-mode="TwoWay" />
+                        <ui:DataBinding property="value" data-source-path="FPSHistoModeIndex" binding-mode="TwoWay" />
                     </Bindings>
-                </ui:DropdownField>
+                </ui:EnumField>
                 <ui:VisualElement style="flex-grow: 1;" />
                 <ui:Toggle label="Update" name="FPSHistoUpdate" class="CheatToggle">
                     <Bindings>
