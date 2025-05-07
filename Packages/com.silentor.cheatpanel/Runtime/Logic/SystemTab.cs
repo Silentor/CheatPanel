@@ -12,15 +12,15 @@ using UnityEngine.UIElements;
 using Screen = UnityEngine.Device.Screen;
 using SystemInfo = UnityEngine.Device.SystemInfo;
 using Application = UnityEngine.Device.Application;
-using Debug = UnityEngine.Debug;
 
-[assembly: GeneratePropertyBagsForAssembly]
+[assembly: GeneratePropertyBagsForAssembly] 
 
 namespace Silentor.CheatPanel
 {
     /// <summary>
     /// Controller for System Tab in Cheat Panel
     /// </summary>
+    [GeneratePropertyBag]
     public partial class SystemTab : IDataSourceViewHashProvider, /*INotifyBindablePropertyChanged,*/ IDisposable   //TODO INotifyBindablePropertyChanged doesnt work, investigate
     {
         private readonly FpsMeter _fpsMeter;

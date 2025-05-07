@@ -121,6 +121,17 @@ namespace Silentor.CheatPanel.DevProject
             set => _name = value;
         }
 
+        public Vector3 Vec3Cheat { get; set; }
+        public Vector2 Vec2Cheat { get; set; }
+        public Vector4 Vec4Cheat { get; set; }
+        public Rect RectCheat { get; set; }
+        public Bounds BoundsCheat { get; set; }
+        public Vector2Int Vec2ICheat { get; set; }
+        public Vector3Int Vec3ICheat { get; set; }
+        public RectInt   RectIntCheat   { get; set; }
+        public BoundsInt BoundsIntCheat { get; set; }
+        public EasingMode EnumCheat { get; set; }
+
         //
         // [Cheat("Resources", TabName = "Resources")]
         // public String AddMoney( [CheatValue(100, 1000, 10000)] int amount )

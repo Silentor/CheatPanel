@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using Silentor.CheatPanel.Binders;
 using Silentor.CheatPanel.Utils;
 using UnityEngine.UIElements;
 using Object = System.Object;
@@ -16,7 +17,7 @@ namespace Silentor.CheatPanel
         private readonly MethodInfo                  _methodInfo;
         private readonly ICheats                     _cheatObject;
         private readonly CheatPanel                  _cheatPanel;
-        private          IReadOnlyList<CheatFieldWrapperBase> _paramsWrappers;
+        private          IReadOnlyList<CheatFieldBinderBase> _paramsWrappers;
         private          Object[]                    _params;
 
         public CheatMethodParams( MethodInfo methodInfo, ICheats cheatObject, CheatPanel cheatPanel, CancellationToken cancel ) : base( methodInfo, cheatObject, cancel )
@@ -65,9 +66,9 @@ namespace Silentor.CheatPanel
             return RefreshUITiming.Never;
         }
 
-        private IReadOnlyList<CheatFieldWrapperBase> GetParamWrappers( )
+        private IReadOnlyList<CheatFieldBinderBase> GetParamWrappers( )
         {
-            var result = new List<CheatFieldWrapperBase>();
+            var result = new List<CheatFieldBinderBase>();
             foreach ( var par in _methodInfo.GetParameters() )
             {
                 if( par.ParameterType == typeof(int) )
@@ -159,15 +160,15 @@ namespace Silentor.CheatPanel
             return result;
         }
 
-        private CheatFieldWrapperBase PrepareWrapper<T>( BaseField<T> field, T value )
+        private CheatFieldBinderBase PrepareWrapper<T>( BaseField<T> field, T value )
         {
-            var wrapper = new ParameterFieldSimpleWrapper<T>( field, value );
+            var wrapper = new ParameterSimpleBinder<T>( field, value );
             return wrapper;
         }
 
-        private CheatFieldWrapperBase PrepareWrapper<TField, TParam>( BaseField<TField> field, TField value, Func<TField, TParam> fieldToParam )
+        private CheatFieldBinderBase PrepareWrapper<TField, TParam>( BaseField<TField> field, TField value, Func<TField, TParam> fieldToParam )
         {
-            var wrapper = new ParameterFieldWrapper<TField, TParam>( field, value, fieldToParam );
+            var wrapper = new ParameterBinder<TField, TParam>( field, value, fieldToParam );
             return wrapper;
         }
     }

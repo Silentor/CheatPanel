@@ -72,6 +72,14 @@
     padding-left: 2px;
 }
 
+.CheatLine {
+    flex-direction: row;
+    min-height: 20px;
+    max-height: 20px;
+    margin-top: 2px;
+    margin-top: 2px;
+}
+
 .TabView__ToolBtn {
     min-height: 20px;
     max-height: 20px;
@@ -117,6 +125,26 @@
     max-height: 20px;
 }
 
+.unity-base-field {
+    margin: 1px;
+    padding: 0 1px;
+}
+
+.unity-base-field__label {
+    min-width: initial;
+    margin: 1px;
+    padding: 1px;
+}
+
+.unity-base-field__input {
+    flex-direction: row;
+}
+
+.unity-label {
+    margin: 0 1px;
+    padding: 0 1px;
+}
+
 .unity-base-slider__dragger {
     max-height: 16px;
     max-width: 12px;
@@ -143,18 +171,6 @@
     padding: 0;
 }
 
-.unity-base-field__label {
-    min-width: initial;
-    margin-top: 1px;
-    margin-right: 1px;
-    margin-bottom: 1px;
-    margin-left: 1px;
-    padding-top: 1px;
-    padding-right: 1px;
-    padding-bottom: 1px;
-    padding-left: 1px;
-}
-
 .unity-base-text-field__input {
     padding-top: 1px;
     padding-right: 1px;
@@ -167,4 +183,29 @@
     padding-right: 1px;
     padding-bottom: 1px;
     padding-left: 1px;
+}
+
+.unity-composite-field__field{
+    margin: 0;
+    padding: 1px;
+}
+
+.unity-composite-field__input {
+    flex-direction: row;
+}
+
+.unity-bounds-field .unity-composite-field .unity-base-field__label{
+    font-size: 10px;
+    -unity-text-align: middle-right;
+}
+
+.unity-bounds-int-field .unity-composite-field .unity-base-field__label{
+    font-size: 10px;
+    -unity-text-align: middle-right;
+}
+
+
+.unity-composite-field__input .unity-base-field__label{
+    font-size: 10px;
+    -unity-text-align: middle-right;
 }

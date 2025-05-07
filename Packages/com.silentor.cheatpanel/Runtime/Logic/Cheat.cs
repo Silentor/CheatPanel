@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Unity.Properties;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -87,7 +88,10 @@ namespace Silentor.CheatPanel
                 {
                     if ( (propertyInfo.GetGetMethod() != null || propertyInfo.GetSetMethod() != null) || propertyInfo.GetCustomAttribute<CheatAttribute>() != null )
                     {
-                        if( propertyInfo.PropertyType.IsPrimitive || propertyInfo.PropertyType == typeof( string ) )
+                        var propType = propertyInfo.PropertyType;
+                        if( propType.IsPrimitive || propType == typeof( string ) || propType == typeof(Vector2) || propType == typeof(Vector3) || propType == typeof(Vector4)
+                            || propType == typeof(Vector3Int) || propType == typeof(Vector2Int) || propType == typeof(Rect) || propType == typeof(Bounds)
+                            || propType == typeof(RectInt) || propType == typeof(BoundsInt) || propType.IsEnum )
                         {
                             return true;
                         }
@@ -230,7 +234,7 @@ namespace Silentor.CheatPanel
         //     RefreshUILogic = refreshCheatLogic;
         // }
 
-        private async Awaitable RefreshUILoop( float refreshTime, CancellationToken cancel )
+        private async void RefreshUILoop( float refreshTime, CancellationToken cancel )
         {
             while ( !cancel.IsCancellationRequested )
             {
@@ -247,8 +251,11 @@ namespace Silentor.CheatPanel
                         Debug.LogError( $"[Cheat]-[RefreshUILoop] Cheat {ToString()} refresh UI exception: {e.Message}" );
                     }
                 }
-                
-                await (refreshTime > 0 ? Awaitable.WaitForSecondsAsync( refreshTime, cancel ) : Awaitable.NextFrameAsync( cancel ));
+
+                if ( refreshTime > 0 )
+                    await Task.Delay( TimeSpan.FromSeconds( refreshTime ), cancel );
+                else
+                    await Awaitable.NextFrameAsync( cancel );
             }
         }
 
