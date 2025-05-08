@@ -1,0 +1,40 @@
+.log-item {
+}
+
+.log-item__main {
+    height: 20px;
+    flex-direction: row;
+    flex-shrink: 0;
+}
+
+.log-item__stack {
+    flex-grow: 1;
+    font-size: 10px;
+    display: none;
+    white-space: normal;
+}
+
+.log-item__stack--expanded {
+    display: flex;
+}
+
+.log-item--info {
+    color: var(--unity-colors-default-text);
+}
+
+.log-item--warning {
+    color: orange;
+}
+
+.log-item--error {
+    color: crimson;
+}
+
+.unity-label {
+    margin-top: 1px;
+    margin-right: 1px;
+    margin-bottom: 1px;
+    margin-left: 1px;
+    padding-top: 0;
+    padding-bottom: 0;
+}

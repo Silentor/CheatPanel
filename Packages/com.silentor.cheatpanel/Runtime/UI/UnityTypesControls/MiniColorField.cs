@@ -12,7 +12,7 @@ namespace Silentor.CheatPanel.UI
     {
         public new static readonly string ussClassName = "mini-color-field";
         public static readonly string sampleUssClassName = ussClassName + "__sample";
-        public static readonly string inputUssClassName = ussClassName + "__input";
+        public new static readonly string inputUssClassName = ussClassName + "__input";
 
         private readonly IntegerField _rField;
         private readonly IntegerField _gField;

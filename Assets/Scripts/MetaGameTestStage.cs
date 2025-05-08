@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -24,13 +26,26 @@ namespace Silentor.CheatPanel.DevProject
 
             await Awaitable.WaitForSecondsAsync( 1, destroyCancellationToken );
 
-            cheats.AddCheats( new MetaGameCheats() );
+            cheats.AddCheats( new LogMessagesCheats() );
 
-            gameObject.AddComponent<HeavyLoadCheats>();
-            cheats.AddCheats(  GetComponent<HeavyLoadCheats>() );
+            //cheats.AddCheats( new MetaGameCheats() );
 
-            Bench();
+            //gameObject.AddComponent<HeavyLoadCheats>();
+            //cheats.AddCheats(  GetComponent<HeavyLoadCheats>() );
+
+            //Bench();
+
+            //StartCoroutine( LogCoroutine() );
         }
+
+        IEnumerator LogCoroutine( )
+        {
+            while ( true )
+            {
+                Debug.Log( "test " + Time.time );
+                yield return new WaitForSecondsRealtime( 1 );
+            }
+        } 
 
         private void Bench( )
         {

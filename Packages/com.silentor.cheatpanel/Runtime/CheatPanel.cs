@@ -72,9 +72,10 @@ namespace Silentor.CheatPanel
             _systemTab = new SystemTab( _fpsMeter, _settingsManager );
             _tabs.Add( _systemTab );
 
-            //var logTab = new CheatTab( "Log", destroyCancellationToken );
+            var logTab = new LogConsoleTab(  );
+            _tabs.Add( logTab );
 
-            _selectedTab = _systemTab;
+            _selectedTab = logTab;
             
             ShowPanel( );
         }
