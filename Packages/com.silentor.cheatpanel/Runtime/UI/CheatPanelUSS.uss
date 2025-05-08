@@ -1,7 +1,7 @@
 .CheatBtn {
-    margin-top: 0;
+    margin-top: 1px;
     margin-right: 1px;
-    margin-bottom: 0;
+    margin-bottom: 1px;
     margin-left: 1px;
     padding-top: 1px;
     padding-right: 1px;
@@ -85,8 +85,66 @@
 .Text {
 }
 
-.ToolBtn {
-    max-height: 20px;
+.toolbar {
+    flex-direction: row;
+    min-height: 22px;
+    max-height: 22px;
+}
+
+.toolbar__button--icon {
+    max-width: 22px;
+    min-width: 22px;
+    max-height: 22px;
+    min-height: 22px;
+    padding: 1px;
+    margin-top: 0;
+    margin-right: 1px;
+    margin-left: 1px;
+    margin-bottom: 0;
+}
+
+.toolbar__space {
+    flex-grow: 1;
+    min-width: 20px;
+}
+
+.toggle-button {
+    margin: 1px;
+    padding: 1px;
+    background-color: var(--unity-colors-button-background);
+    border-color: var(--unity-colors-button-border);
+    border-width: 1px;
+    min-width: 20px;
+}
+
+.toggle-button > .unity-label {
+    margin: 0;
+    padding: 0;
+    -unity-text-align: middle-center;
+}
+
+.toggle-button > .unity-toggle__input {
+    display: none;
+}
+
+.toggle-button:hover {
+    background-color: var(--unity-colors-button-background-hover);
+    border-color: var(--unity-colors-button-border-hover);
+}
+
+.toggle-button:active {
+    background-color: var(--unity-colors-button-background-pressed);
+    border-color: var(--unity-colors-button-border-pressed);
+}
+
+.toggle-button:checked {
+    background-color: var(--unity-colors-button-background-pressed);
+    border-color: var(--unity-colors-button-border-pressed);
+}
+
+.toggle-button:disabled {
+    background-color: var(--unity-colors-button-background-disabled);
+    border-color: var(--unity-colors-button-border-disabled);
 }
 
 .unity-base-field {

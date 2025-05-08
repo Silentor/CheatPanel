@@ -39,17 +39,61 @@ namespace Silentor.CheatPanel
             {
                 _isAutoscroll = value;
                 if( value )
-                    _log.ScrollToItem( _logBuffer.Count );
+                    _log.ScrollToItem( _fullLog.Count );
             }
         }
 
+        [CreateProperty]
+        public int InfosCount => _infosCount;
+
+        [CreateProperty]
+        public int WarningsCount => _warningsCount;
+
+        [CreateProperty]
+        public int ErrorsCount => _errorsCount;
+
+        [CreateProperty]
+        public bool ShowInfos
+        {
+            get => _showInfos;
+            set
+            {
+                _showInfos = value;
+                UpdateLogControl();
+            }
+        }
+
+        [CreateProperty]
+        public bool ShowWarningss
+        {
+            get => _showWarnings;
+            set
+            {
+                _showWarnings = value;
+                UpdateLogControl();
+            }
+        }
+
+        [CreateProperty]
+        public bool ShowErrors
+        {
+            get => _showErrors;
+            set
+            {
+                _showErrors = value;
+                UpdateLogControl();
+            }
+        }
+
+
         public LogConsoleTab( ) : base ("Log")
         {
-            _logBuffer = new List<LogItem>( _capacity );
+            _fullLog = new List<LogItem>( _capacity );
+            _filteredLog = new List<LogItem>( _capacity );
             _writeBuffer = new List<LogItem>();
 
             Application.logMessageReceivedThreaded += LogMessageReceivedThreaded;
-            _mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            _mainThreadId = Thread.CurrentThread.ManagedThreadId;
 
             StartLogging();
         }
@@ -79,6 +123,13 @@ namespace Silentor.CheatPanel
             Publish();
         }
 
+        public override void Show( )
+        {
+            base.Show();
+
+            UpdateLogControl();
+        }
+
         public override void Dispose( )
         {
             base.Dispose();
@@ -90,15 +141,25 @@ namespace Silentor.CheatPanel
 
         private int _capacity = 1000;
         private readonly List<LogItem> _writeBuffer;
-        private readonly List<LogItem> _logBuffer;
+        private readonly List<LogItem> _fullLog;
+        private readonly List<LogItem> _filteredLog;
+
         private readonly Int32 _mainThreadId;
         private readonly Object _lock = new ( );
         private Boolean _isRecording;
         private Boolean _isAutoscroll;
         private Boolean _isDisposed;
-        private Boolean _isLogItemsWaiting;
+        private Boolean _isWriteBufferNotEmpty;
+
+        private int _infosCount;
+        private int _warningsCount;
+        private int _errorsCount;
+
         private ListView _log;
         private Int64 _version;
+        private Boolean _showInfos = true;
+        private Boolean _showWarnings = true;
+        private Boolean _showErrors = true;
 
         protected override VisualElement GenerateCustomContent( )
         {
@@ -110,7 +171,7 @@ namespace Silentor.CheatPanel
             _log.bindItem += ( logItem, index ) =>
             {
                 var logItemElement = (LogItemElement)logItem;
-                var logData = _logBuffer[ index ];
+                var logData = _filteredLog[ index ];
                 var timeText = $"[{logData.Time:HH:mm:ss}]";        //todo cache for consecutive items
                 logItemElement.SetLogItem( timeText, logData.Log, logData.StackTrace, logData.LogType );
             };
@@ -120,7 +181,7 @@ namespace Silentor.CheatPanel
                 logItemElement.Recycle();
             };
 
-            _log.itemsSource = _logBuffer;
+            _log.itemsSource = _filteredLog;
 
             return instance;
         }
@@ -136,7 +197,7 @@ namespace Silentor.CheatPanel
             lock ( _lock )
             {
                 _writeBuffer.Add( newMessage );
-                _isLogItemsWaiting = true;
+                _isWriteBufferNotEmpty = true;
             }
         }
 
@@ -146,26 +207,85 @@ namespace Silentor.CheatPanel
             {
                 if ( _isRecording )
                 {
-                    if ( _isLogItemsWaiting )
+                    if ( _isWriteBufferNotEmpty )
                     {
                         lock ( _lock )
                         {
-                            var itemsToDelete = _logBuffer.Count + _writeBuffer.Count - _capacity;
-                            if( itemsToDelete > 0 )                                
-                                _logBuffer.RemoveRange( _logBuffer.Count - itemsToDelete, itemsToDelete );
+                            var itemsToDelete = _fullLog.Count + _writeBuffer.Count - _capacity;
+                            if ( itemsToDelete > 0 )
+                            {
+                                for ( int i = _fullLog.Count - itemsToDelete; i < _fullLog.Count; i++ )
+                                {
+                                    if ( _fullLog[ i ].LogType == LogType.Log )
+                                        _infosCount--;
+                                    else if ( _fullLog[ i ].LogType == LogType.Warning )
+                                        _warningsCount--;
+                                    else 
+                                        _errorsCount--;
+                                }
+                                                            
+                                _fullLog.RemoveRange( _fullLog.Count - itemsToDelete, itemsToDelete );
+                            }
 
-                            _logBuffer.AddRange( _writeBuffer );
+                            foreach ( var item in _writeBuffer )
+                            {
+                                if ( item.LogType == LogType.Log )
+                                    _infosCount++;
+                                else if ( item.LogType == LogType.Warning )
+                                    _warningsCount++;
+                                else
+                                    _errorsCount++;
+                            }
+
+                            _fullLog.AddRange( _writeBuffer );
                             _writeBuffer.Clear();
-                            _isLogItemsWaiting = false;
+                            _isWriteBufferNotEmpty = false;
                         }
 
+                        Publish();
                         if( IsVisible )
-                            _log.RefreshItems();
+                            UpdateLogControl();
                     }
                 }
                 
-                await Task.Delay( 100, CancellationToken.None );
+                await Task.Delay( 500, CancellationToken.None );
             }
+        }
+
+        private void UpdateLogControl( )
+        {
+            _filteredLog.Clear();
+
+            if ( _showInfos && _showWarnings && _showErrors )
+            {
+                _filteredLog.AddRange( _fullLog );
+            }
+            else if ( !_showInfos && !_showWarnings && !_showErrors )
+            {
+            }
+            else 
+            {
+                foreach ( var logItem in _fullLog )
+                {
+                    if( logItem.LogType == LogType.Log )
+                    {
+                        if ( _showInfos )
+                            _filteredLog.Add( logItem );
+                    }
+                    else if( logItem.LogType == LogType.Warning )
+                    {
+                        if ( _showWarnings )
+                            _filteredLog.Add( logItem );
+                    }
+                    else 
+                    {
+                        if(  _showErrors )
+                            _filteredLog.Add( logItem );
+                    }
+                }
+            }
+
+            _log.RefreshItems();
         }
 
         public readonly struct LogItem

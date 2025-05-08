@@ -1,3 +1,9 @@
+:root {
+    --info-color: var(--unity-colors-default-text);
+    --warning-color: orange;
+    --error-color: crimson;
+}
+
 .log-item {
 }
 
@@ -19,15 +25,15 @@
 }
 
 .log-item--info {
-    color: var(--unity-colors-default-text);
+    color: var(--info-color);
 }
 
 .log-item--warning {
-    color: orange;
+    color: var(--warning-color);
 }
 
 .log-item--error {
-    color: crimson;
+    color: var(--error-color);
 }
 
 .unity-label {

@@ -12,27 +12,27 @@ namespace Silentor.CheatPanel.DevProject
 
         public void Warning( )
         {
-            Debug.LogWarning( "Log message" );
+            Debug.LogWarning( "Warn message" );
         }
 
         public void Error( )
         {
-            Debug.LogError( "Log message" );
+            Debug.LogError( "Error message" );
         }
 
         public void ThrowException( )
         {
-            throw new Exception( "Log message" );
+            throw new Exception( "Throw Exception!!!" );
         }
 
         public void LogException( )
         {
-            Debug.LogException( new Exception("Some exception") );
+            Debug.LogException( new Exception("Log exception") );
         }
 
         public void Assert( )
         {
-            Debug.Assert( false, "Log message" );
+            Debug.Assert( false, "Assert" );
         }
     }
 }

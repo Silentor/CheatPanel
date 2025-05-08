@@ -1,15 +1,35 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
     <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/LogTabStyles.uss?fileID=7433441132597879392&amp;guid=b91f0c9abf21fb843b9f6f1f8ee388fa&amp;type=3#LogTabStyles" />
-    <ui:VisualElement name="UnityLog" style="flex-grow: 1;">
-        <ui:VisualElement name="Toolbar" class="CheatLine" style="flex-grow: 1;">
-            <ui:Button text="Clear" class="CheatBtn" />
-            <ui:Toggle label="Record">
+    <ui:VisualElement name="UnityLog" data-source-type="Silentor.CheatPanel.LogConsoleTab, Silentor.CheatPanel" style="flex-grow: 1;">
+        <ui:VisualElement name="Toolbar" class="toolbar" style="flex-grow: 1;">
+            <ui:Button name="ClearBtn" tooltip="Clear log" class="toolbtn--icon toolbar__button--icon" style="background-image: resource(&apos;delete_forever&apos;); -unity-background-image-tint-color: rgb(168, 0, 0);" />
+            <ui:VisualElement style="flex-grow: 1;" />
+            <ui:Toggle label=" " tooltip="Record log" name="RecordLog" class="toggle-button" style="background-image: resource(&apos;record&apos;); background-size: 70% 70%; -unity-background-image-tint-color: rgb(164, 0, 0);">
                 <Bindings>
                     <ui:DataBinding property="value" data-source-path="IsRecording" data-source-type="Silentor.CheatPanel.LogConsoleTab, Silentor.CheatPanel" binding-mode="TwoWay" />
                 </Bindings>
             </ui:Toggle>
+            <ui:VisualElement style="flex-grow: 1;" />
+            <ui:Toggle label="0" name="ShowInfos" class="toggle-button log-item--info">
+                <Bindings>
+                    <ui:DataBinding property="label" data-source-path="InfosCount" data-source-type="Silentor.CheatPanel.LogConsoleTab, Silentor.CheatPanel" binding-mode="ToTarget" />
+                    <ui:DataBinding property="value" data-source-path="ShowInfos" binding-mode="TwoWay" />
+                </Bindings>
+            </ui:Toggle>
+            <ui:Toggle label="0" name="ShowWarnings" class="toggle-button log-item--warning">
+                <Bindings>
+                    <ui:DataBinding property="label" data-source-path="WarningsCount" data-source-type="Silentor.CheatPanel.LogConsoleTab, Silentor.CheatPanel" binding-mode="ToTarget" />
+                    <ui:DataBinding property="value" data-source-path="ShowWarningss" binding-mode="TwoWay" />
+                </Bindings>
+            </ui:Toggle>
+            <ui:Toggle label="0" name="ShowErrors" class="toggle-button log-item--error">
+                <Bindings>
+                    <ui:DataBinding property="label" data-source-path="ErrorsCount" data-source-type="Silentor.CheatPanel.LogConsoleTab, Silentor.CheatPanel" binding-mode="ToTarget" />
+                    <ui:DataBinding property="value" data-source-path="ShowErrors" binding-mode="TwoWay" />
+                </Bindings>
+            </ui:Toggle>
         </ui:VisualElement>
-        <ui:ListView name="Log" allow-add="false" allow-remove="false" virtualization-method="DynamicHeight" fixed-item-height="20" />
+        <ui:ListView name="Log" allow-add="false" allow-remove="false" virtualization-method="DynamicHeight" fixed-item-height="20" show-bound-collection-size="false" selection-type="Multiple" />
     </ui:VisualElement>
 </ui:UXML>

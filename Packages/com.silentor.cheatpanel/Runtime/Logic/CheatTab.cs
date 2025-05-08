@@ -57,7 +57,7 @@ namespace Silentor.CheatPanel
             return _contentUI ??= GenerateContentUI();
         }
 
-        public void Show( )
+        public virtual void Show( )
         {
             IsVisible = true;
             if( _contentUI == null )
