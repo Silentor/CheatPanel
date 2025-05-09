@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
+using Unity.Jobs;
 using UnityEngine;
 
 namespace Silentor.CheatPanel.DevProject
@@ -33,6 +37,54 @@ namespace Silentor.CheatPanel.DevProject
         public void Assert( )
         {
             Debug.Assert( false, "Assert" );
+        }
+
+        public void LogFromAnotherThread( )
+        {
+            Thread thread = new Thread( () =>
+            {
+                Debug.Log( "Log from another thread" );
+            } );
+            thread.Start();
+        }
+
+        public void LogFromAnotherThreadWithException( )
+        {
+            Thread thread = new Thread( () =>
+            {
+                throw new Exception( "Log from another thread with exception" );
+            } );
+            thread.Start();
+        }
+
+        public void LogFromAwaitableBackgroundThread( )
+        {
+            Log();
+            async Awaitable Log( )
+            {
+                await Awaitable.BackgroundThreadAsync();
+                Debug.Log( "Log from Awaitable.BackgroundThreadAsync()" );
+            }
+        }
+
+        public void LogFromJob( )
+        {
+            DoneJobOnThread();
+
+            async Awaitable DoneJobOnThread( )
+            {
+                var handle = new TestJob().Schedule();
+                await Awaitable.NextFrameAsync(  );
+                handle.Complete();
+            }
+        }
+
+        public struct TestJob : IJob
+        {
+            public void Execute( )
+            {
+                Debug.Log( "Log from IJob" );
+            }
         }
     }
 }

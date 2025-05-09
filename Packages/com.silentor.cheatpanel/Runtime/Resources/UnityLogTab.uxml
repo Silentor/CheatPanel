@@ -11,6 +11,12 @@
                 </Bindings>
             </ui:Toggle>
             <ui:VisualElement style="flex-grow: 1;" />
+            <ui:Button name="SaveLogBtn" tooltip="Save log to file" class="toolbar__button--icon" style="background-image: resource(&apos;save&apos;); -unity-background-image-tint-color: rgb(70, 96, 124);" />
+            <ui:TextField placeholder-text="search" name="SearchField">
+                <Bindings>
+                    <ui:DataBinding property="value" data-source-path="SearchField" binding-mode="TwoWay" />
+                </Bindings>
+            </ui:TextField>
             <ui:Toggle label="0" name="ShowInfos" class="toggle-button log-item--info">
                 <Bindings>
                     <ui:DataBinding property="label" data-source-path="InfosCount" data-source-type="Silentor.CheatPanel.LogConsoleTab, Silentor.CheatPanel" binding-mode="ToTarget" />
@@ -20,7 +26,7 @@
             <ui:Toggle label="0" name="ShowWarnings" class="toggle-button log-item--warning">
                 <Bindings>
                     <ui:DataBinding property="label" data-source-path="WarningsCount" data-source-type="Silentor.CheatPanel.LogConsoleTab, Silentor.CheatPanel" binding-mode="ToTarget" />
-                    <ui:DataBinding property="value" data-source-path="ShowWarningss" binding-mode="TwoWay" />
+                    <ui:DataBinding property="value" data-source-path="ShowWarnings" binding-mode="TwoWay" />
                 </Bindings>
             </ui:Toggle>
             <ui:Toggle label="0" name="ShowErrors" class="toggle-button log-item--error">

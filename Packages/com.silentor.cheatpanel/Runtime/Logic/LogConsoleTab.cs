@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Silentor.CheatPanel.UI;
 using Unity.Properties;
 using UnityEngine;
@@ -59,18 +61,18 @@ namespace Silentor.CheatPanel
             set
             {
                 _showInfos = value;
-                UpdateLogControl();
+                RebuildFilteredList();
             }
         }
 
         [CreateProperty]
-        public bool ShowWarningss
+        public bool ShowWarnings
         {
             get => _showWarnings;
             set
             {
                 _showWarnings = value;
-                UpdateLogControl();
+                RebuildFilteredList();
             }
         }
 
@@ -81,7 +83,18 @@ namespace Silentor.CheatPanel
             set
             {
                 _showErrors = value;
-                UpdateLogControl();
+                RebuildFilteredList();
+            }
+        }
+
+        [CreateProperty]
+        public String SearchField
+        {
+            get => _searchField;
+            set
+            {
+                _searchField = value;
+                RebuildFilteredList();
             }
         }
 
@@ -90,6 +103,7 @@ namespace Silentor.CheatPanel
         {
             _fullLog = new List<LogItem>( _capacity );
             _filteredLog = new List<LogItem>( _capacity );
+            _writeBufferLocked = new List<LogItem>();
             _writeBuffer = new List<LogItem>();
 
             Application.logMessageReceivedThreaded += LogMessageReceivedThreaded;
@@ -108,7 +122,7 @@ namespace Silentor.CheatPanel
 
             _isRecording = true;
             Publish();
-            UpdateLogBuffer( );
+            UpdateLogBufferAsync( );
         }
 
         public void StopLogging( )
@@ -127,7 +141,8 @@ namespace Silentor.CheatPanel
         {
             base.Show();
 
-            UpdateLogControl();
+            Publish();
+            RebuildFilteredList();
         }
 
         public override void Dispose( )
@@ -140,6 +155,7 @@ namespace Silentor.CheatPanel
         }
 
         private int _capacity = 1000;
+        private readonly List<LogItem> _writeBufferLocked;
         private readonly List<LogItem> _writeBuffer;
         private readonly List<LogItem> _fullLog;
         private readonly List<LogItem> _filteredLog;
@@ -149,7 +165,7 @@ namespace Silentor.CheatPanel
         private Boolean _isRecording;
         private Boolean _isAutoscroll;
         private Boolean _isDisposed;
-        private Boolean _isWriteBufferNotEmpty;
+        private Boolean _isWriteBufferEmpty = true;
 
         private int _infosCount;
         private int _warningsCount;
@@ -160,6 +176,7 @@ namespace Silentor.CheatPanel
         private Boolean _showInfos = true;
         private Boolean _showWarnings = true;
         private Boolean _showErrors = true;
+        private String _searchField;
 
         protected override VisualElement GenerateCustomContent( )
         {
@@ -173,7 +190,7 @@ namespace Silentor.CheatPanel
                 var logItemElement = (LogItemElement)logItem;
                 var logData = _filteredLog[ index ];
                 var timeText = $"[{logData.Time:HH:mm:ss}]";        //todo cache for consecutive items
-                logItemElement.SetLogItem( timeText, logData.Log, logData.StackTrace, logData.LogType );
+                logItemElement.SetLogItem( timeText, logData.ThreadId != _mainThreadId ? $"||{logData.ThreadId}" : null, logData.Log, logData.StackTrace, logData.LogType );
             };
             _log.unbindItem += ( logItem, index ) =>
             {
@@ -183,7 +200,57 @@ namespace Silentor.CheatPanel
 
             _log.itemsSource = _filteredLog;
 
+            var clearBtn = instance.Q<Button>( "ClearBtn" );
+            clearBtn.clicked += ClearLog;
+
+            var saveLogBtn = instance.Q<Button>( "SaveLogBtn" );
+            saveLogBtn.clicked += SaveLogToFile;
+
             return instance;
+        }
+
+        private void SaveLogToFile( )
+        {
+            var persistentPath = Application.persistentDataPath;
+            var logFileName    = $"Log_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt";
+            var path           = System.IO.Path.Combine( persistentPath, logFileName );
+
+            try
+            {
+                using ( var fileWriter = System.IO.File.CreateText( path ) )
+                {
+                    foreach ( var logItem in _fullLog )
+                    {
+                        if ( logItem.ThreadId != _mainThreadId )
+                            fileWriter.WriteLine( $"[{logItem.Time:HH:mm:ss.fff}]  {logItem.LogType} {logItem.ThreadId} {logItem.Log}" );
+                        else
+                            fileWriter.WriteLine( $"[{logItem.Time:HH:mm:ss.fff}]  {logItem.LogType} {logItem.Log}" );
+                        if ( !String.IsNullOrEmpty( logItem.StackTrace ) )
+                        {
+                            using var sr = new System.IO.StringReader( logItem.StackTrace );
+                            while ( sr.ReadLine() is { } line )
+                            {
+                                fileWriter.WriteLine( "    " + line );
+                            }
+                        }
+                    }
+                }
+            }
+            catch ( Exception e )
+            {
+                Debug.LogError( $"[{nameof(LogConsoleTab)}] Error creating file for dumping Unity log: {e}" );
+            }
+
+            Debug.Log( $"[{nameof(LogConsoleTab)}] Log saved to file {path}" );
+        }
+
+        private void ClearLog( )
+        {
+            _infosCount = _warningsCount = _errorsCount = 0;
+            _fullLog.Clear();
+            _filteredLog.Clear();
+            RebuildFilteredList();
+            Publish();
         }
 
         private void LogMessageReceivedThreaded(String condition, String stackTrace, LogType type )
@@ -191,60 +258,74 @@ namespace Silentor.CheatPanel
             if( _isDisposed || !_isRecording )
                 return;
 
-            Assert.IsTrue( _writeBuffer.Count < _capacity, "Write buffer is full, something wrong with UpdateLogBuffer( )" );
+            Assert.IsTrue( _writeBufferLocked.Count < _capacity, "Write buffer is full, something wrong with UpdateLogBuffer( )" );
 
-            var newMessage = new LogItem( DateTime.Now, condition, stackTrace, type, Time.frameCount, Thread.CurrentThread.ManagedThreadId );
+            LogItem newMessage;
+            var logThreadId = Thread.CurrentThread.ManagedThreadId;
+            if( logThreadId == _mainThreadId)
+                newMessage = new LogItem( DateTime.Now, condition, stackTrace, type, Time.frameCount, _mainThreadId );
+            else
+                newMessage = new LogItem( DateTime.Now, condition, stackTrace, type, 0 /*No frame info*/, logThreadId );
+
             lock ( _lock )
             {
-                _writeBuffer.Add( newMessage );
-                _isWriteBufferNotEmpty = true;
+                _writeBufferLocked.Add( newMessage );
+                _isWriteBufferEmpty = false;
             }
         }
 
-        private async void UpdateLogBuffer( )
+        private async void UpdateLogBufferAsync( )
         {
             while ( !_isDisposed )
             {
                 if ( _isRecording )
                 {
-                    if ( _isWriteBufferNotEmpty )
+                    if ( !_isWriteBufferEmpty )
                     {
+                        //Acquire new item from locked buffer
                         lock ( _lock )
                         {
-                            var itemsToDelete = _fullLog.Count + _writeBuffer.Count - _capacity;
-                            if ( itemsToDelete > 0 )
-                            {
-                                for ( int i = _fullLog.Count - itemsToDelete; i < _fullLog.Count; i++ )
-                                {
-                                    if ( _fullLog[ i ].LogType == LogType.Log )
-                                        _infosCount--;
-                                    else if ( _fullLog[ i ].LogType == LogType.Warning )
-                                        _warningsCount--;
-                                    else 
-                                        _errorsCount--;
-                                }
-                                                            
-                                _fullLog.RemoveRange( _fullLog.Count - itemsToDelete, itemsToDelete );
-                            }
-
-                            foreach ( var item in _writeBuffer )
-                            {
-                                if ( item.LogType == LogType.Log )
-                                    _infosCount++;
-                                else if ( item.LogType == LogType.Warning )
-                                    _warningsCount++;
-                                else
-                                    _errorsCount++;
-                            }
-
-                            _fullLog.AddRange( _writeBuffer );
                             _writeBuffer.Clear();
-                            _isWriteBufferNotEmpty = false;
+                            _writeBuffer.AddRange( _writeBufferLocked );
+                            _writeBufferLocked.Clear();
+                            _isWriteBufferEmpty = true;
                         }
 
-                        Publish();
-                        if( IsVisible )
-                            UpdateLogControl();
+                        //Remove old entries
+                        var itemsToDelete = _fullLog.Count + _writeBuffer.Count - _capacity;
+                        if ( itemsToDelete > 0 )
+                        {
+                            for ( int i = _fullLog.Count - itemsToDelete; i < _fullLog.Count; i++ )
+                            {
+                                if ( _fullLog[ i ].LogType == LogType.Log )
+                                    _infosCount--;
+                                else if ( _fullLog[ i ].LogType == LogType.Warning )
+                                    _warningsCount--;
+                                else 
+                                    _errorsCount--;
+                            }
+                                                        
+                            _fullLog.RemoveRange( 0, itemsToDelete );
+                        }
+
+                        //Add new entries
+                        foreach ( var item in _writeBuffer )
+                        {
+                            if ( item.LogType == LogType.Log )
+                                _infosCount++;
+                            else if ( item.LogType == LogType.Warning )
+                                _warningsCount++;
+                            else
+                                _errorsCount++;
+                        }
+
+                        _fullLog.AddRange( _writeBuffer );
+
+                        if ( IsVisible )
+                        {
+                            Publish();
+                            UpdateFilteredList( _writeBuffer );
+                        }
                     }
                 }
                 
@@ -252,40 +333,100 @@ namespace Silentor.CheatPanel
             }
         }
 
-        private void UpdateLogControl( )
+        //Update filtered list with new values
+        private void UpdateFilteredList( List<LogItem> newEntries )
         {
-            _filteredLog.Clear();
-
-            if ( _showInfos && _showWarnings && _showErrors )
+            //Some fast path's
+            if ( _fullLog.Count == 0 )
             {
-                _filteredLog.AddRange( _fullLog );
+                if( _filteredLog.Count != 0 )
+                {
+                    _filteredLog.Clear();
+                    _log.RefreshItems();
+                    return;
+                } 
             }
-            else if ( !_showInfos && !_showWarnings && !_showErrors )
-            {
-            }
-            else 
+            else if( _filteredLog.Count == 0 )
             {
                 foreach ( var logItem in _fullLog )
                 {
-                    if( logItem.LogType == LogType.Log )
+                    if( IsLogItemVisible(logItem) )
+                        _filteredLog.Add( logItem );
+                }
+                _log.RefreshItems();
+                return;
+            }
+            
+            //Remove the very old entries
+            var wasDeleted = false;
+            if ( _filteredLog.Count > 0 )
+            {
+                var oldestFullLogEntryTime = _fullLog[ 0 ].Time;
+                if( _filteredLog[0].Time < oldestFullLogEntryTime )            //Very old entries found at the beginning of the filtered log
+                {
+                    if( _filteredLog[^1].Time < oldestFullLogEntryTime )        //Entire filtered log is very old
                     {
-                        if ( _showInfos )
-                            _filteredLog.Add( logItem );
+                        _filteredLog.Clear();
+                        wasDeleted = true;
                     }
-                    else if( logItem.LogType == LogType.Warning )
+                    else
                     {
-                        if ( _showWarnings )
-                            _filteredLog.Add( logItem );
-                    }
-                    else 
-                    {
-                        if(  _showErrors )
-                            _filteredLog.Add( logItem );
+                        var indexOfFirstActualItem = _filteredLog.FindIndex( li => li.Time > oldestFullLogEntryTime );
+                        _filteredLog.RemoveRange( 0, indexOfFirstActualItem );
+                        wasDeleted = true;
                     }
                 }
             }
 
+            var wasAdded = false;
+            foreach ( var newEntry in newEntries )
+            {
+                if ( IsLogItemVisible( newEntry ) )
+                {
+                    _filteredLog.Add( newEntry );
+                    wasAdded = true;
+                }
+            }
+
+            if( wasAdded || wasDeleted )
+                _log.RefreshItems();
+        }
+
+        //Completely rebuild filtered list
+        private void RebuildFilteredList( )
+        {
+            _filteredLog.Clear();
+            foreach ( var logItem in _fullLog )
+            {
+                if( IsLogItemVisible( logItem ) )
+                    _filteredLog.Add( logItem );
+            }
+
             _log.RefreshItems();
+        }
+
+        private bool IsLogItemVisible( LogItem logItem )
+        {
+            if( logItem.LogType == LogType.Log )
+            {
+                if ( !_showInfos )
+                    return false;
+            }
+            else if( logItem.LogType == LogType.Warning )
+            {
+                if ( !_showWarnings )
+                    return false;
+            }
+            else 
+            {
+                if(  !_showErrors )
+                    return false;
+            }
+
+            if ( !string.IsNullOrEmpty( _searchField ) && !logItem.Log.Contains( _searchField, StringComparison.OrdinalIgnoreCase ) && !logItem.StackTrace.Contains( _searchField, StringComparison.OrdinalIgnoreCase ) ) 
+                return false;
+
+            return true;
         }
 
         public readonly struct LogItem
@@ -311,7 +452,6 @@ namespace Silentor.CheatPanel
         private static class Resources
         {
             public static readonly VisualTreeAsset Content = UnityEngine.Resources.Load<VisualTreeAsset>( "UnityLogTab" );
-            public static readonly VisualTreeAsset LogItem = UnityEngine.Resources.Load<VisualTreeAsset>( "UnityLogItem" );
         }
 
 #region IDataSourceViewHashProvider

@@ -8,9 +8,17 @@
 }
 
 .log-item__main {
-    height: 20px;
+    height: auto;
     flex-direction: row;
-    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.log-item__message{
+    white-space: normal;
+}
+
+.log-item__thread {
+    display: none;
 }
 
 .log-item__stack {
