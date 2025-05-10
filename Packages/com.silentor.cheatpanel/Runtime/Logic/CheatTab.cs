@@ -10,9 +10,12 @@ namespace Silentor.CheatPanel
 {
     public class CheatTab : IDisposable
     {
-        public readonly  string     Name;
+        public const String TabUssClassName        = "tab";
+        public const String TabContentUssClassName = "tab__content";
+        public const String TabButtonUssClassName  = "tab__button";
 
-        public readonly  Button              CheatTabButton;
+
+        public readonly  string     Name;
         public readonly  List<CheatGroup>    CheatsGroups     = new();
 
         public Boolean IsVisible { get; private set; }
@@ -20,9 +23,6 @@ namespace Silentor.CheatPanel
         public CheatTab( String name )
         {
             Name                = name;
-            CheatTabButton      = new Button();
-            CheatTabButton.text = name;
-            CheatTabButton.AddToClassList( TabButtonUssClassName );
         }
 
         public void Add( Cheat cheat )
@@ -52,7 +52,13 @@ namespace Silentor.CheatPanel
             group.AddCheat( cheat );
         }
 
-        public VisualElement GetUI( )
+
+        public Button GetTabButton(  )
+        {
+            return _buttonUI ??= GenerateTabButton();
+        }
+
+        public VisualElement GetTabContent( )
         {
             return _contentUI ??= GenerateContentUI();
         }
@@ -69,10 +75,8 @@ namespace Silentor.CheatPanel
             IsVisible = false;
         }
 
-        private          VisualElement     _contentUI;
-        private const    String            TabUssClassName        = "tab";
-        private const    String            TabContentUssClassName = "tab__content";
-        private const    String            TabButtonUssClassName  = "tab__button";
+        private          VisualElement      _contentUI;
+        private          Button             _buttonUI;
 
         private VisualElement GenerateContentUI( )
         {
@@ -94,6 +98,14 @@ namespace Silentor.CheatPanel
         protected virtual VisualElement GenerateCustomContent( )
         {
             return null;
+        }
+
+        protected virtual Button GenerateTabButton( )
+        {
+            var tabBtn      = new Button();
+            tabBtn.text = Name;
+            tabBtn.AddToClassList( TabButtonUssClassName );
+            return tabBtn;
         }
 
         private void InvalidateUI( )
