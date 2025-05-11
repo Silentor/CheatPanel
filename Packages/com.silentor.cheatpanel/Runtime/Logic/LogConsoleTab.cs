@@ -222,6 +222,7 @@ namespace Silentor.CheatPanel
             var btn = new Button();
             btn.style.backgroundImage = Background.FromSprite( Resources.TabButtonIcon );
             btn.style.backgroundSize = new StyleBackgroundSize( new BackgroundSize( BackgroundSizeType.Contain ) );
+            btn.tooltip = "Unity log tab";
             return btn;
         }
 

@@ -146,6 +146,15 @@ namespace Silentor.CheatPanel
             return instance;
         }
 
+        protected override Button GenerateTabButton( )
+        {
+            var btn = new Button();
+            btn.style.backgroundImage = Background.FromSprite( Resources.TabButtonIcon );
+            btn.style.backgroundSize  = new StyleBackgroundSize( new BackgroundSize( BackgroundSizeType.Contain ) );
+            btn.tooltip = "Unity system settings tab";
+            return btn;
+        }
+
         private void ExpandSysInfoOnClicked( Label deviceInfoLabel, Button expandSysInfoBtn )
         {
             var wasExpanded = deviceInfoLabel.style.display == DisplayStyle.Flex;
@@ -221,6 +230,7 @@ namespace Silentor.CheatPanel
         private static class Resources
         {
             public static readonly VisualTreeAsset Content = UnityEngine.Resources.Load<VisualTreeAsset>( "SystemTab" );
+            public static readonly Sprite TabButtonIcon = UnityEngine.Resources.Load<Sprite>( "BuildSettings.Editor" );
         }
 
 #region IDataSourceViewHashProvider
