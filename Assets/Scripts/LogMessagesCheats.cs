@@ -4,11 +4,20 @@ using System.Collections.Generic;
 using System.Threading;
 using Unity.Jobs;
 using UnityEngine;
+using Object = System.Object;
 
 namespace Silentor.CheatPanel.DevProject
 {
     public class LogMessagesCheats: ICheats
     {
+        private readonly MonoBehaviour _host;
+        private Coroutine _floodCoroutine;
+
+        public LogMessagesCheats( MonoBehaviour host )
+        {
+            _host = host;
+        }
+
         public void Log( )
         {
             Debug.Log( "Log message" );
@@ -84,6 +93,26 @@ namespace Silentor.CheatPanel.DevProject
             public void Execute( )
             {
                 Debug.Log( "Log from IJob" );
+            }
+        }
+
+        public void FloodLogs( )
+        {
+            _floodCoroutine = _host.StartCoroutine( FloodLogsCoroutine() );
+        }
+
+        public void StopFloodLogs( )
+        {
+            _host.StopCoroutine( _floodCoroutine );
+        }
+
+        private IEnumerator FloodLogsCoroutine( )
+        {
+            var counter = 0;
+            while ( true )
+            {
+                Debug.Log( $"Flood log {counter++}" );
+                yield return new WaitForSeconds( 0.1f );
             }
         }
     }

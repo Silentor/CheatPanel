@@ -1,15 +1,17 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/MaxPanel.uss?fileID=7433441132597879392&amp;guid=bd8650dbb02ef0d4a872eb6cb6ff0217&amp;type=3#MaxPanel" />
     <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
     <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/CheatGroupControl/CheatGroupControl.uss?fileID=7433441132597879392&amp;guid=2ee93d02f7520bf45a5980bf36ddd9cd&amp;type=3#CheatGroupControl" />
-    <ui:VisualElement name="CheatTabView" class="TabView" style="flex-grow: 1;">
-        <ui:VisualElement name="Header" class="TabView__Header">
+    <ui:VisualElement name="CheatMaxPanel">
+        <ui:VisualElement name="Header" class="tab-view__header">
             <ui:ScrollView name="TabsScroll" vertical-scroller-visibility="Hidden" mode="Horizontal" style="flex-grow: 1; flex-direction: row;" />
             <ui:VisualElement name="ToolBar" style="flex-direction: row;">
-                <ui:Button text="☼" name="Skin" class="TabView__ToolBtn" />
-                <ui:Button text="-" name="MinimizeBtn" class="TabView__ToolBtn" />
+                <ui:Button text="☼" name="Skin" class="tab-view__tool-btn" />
+                <ui:Button text="↑" name="DockBtn" class="tab-view__tool-btn" />
+                <ui:Button text="-" name="MinimizeBtn" class="tab-view__tool-btn" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="Content" style="flex-grow: 1;" />
-        <ui:Label text="cheat execute result" name="Result" class="CheatLabel TabView__result" />
+        <ui:Label text="cheat execute result" name="Result" class="tab-view__result" />
     </ui:VisualElement>
 </ui:UXML>

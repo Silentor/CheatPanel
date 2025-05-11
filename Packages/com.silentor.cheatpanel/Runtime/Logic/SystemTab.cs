@@ -255,7 +255,6 @@ namespace Silentor.CheatPanel
             base.Dispose();
 
             _isDisposed = true;
-            _settings.UpdateSettings();
         }
 
 #endregion

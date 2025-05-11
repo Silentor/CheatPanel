@@ -10,8 +10,9 @@ namespace Silentor.CheatPanel.UI
         private readonly Label _timeLabel;
         private readonly Label _messageLabel;
         private readonly Label _stackLabel;
-        private LogType _logType;
         private readonly Label _threadLabel;
+
+        private LogType _logType;
 
         public const string LogItemUssClassName = "log-item";
         public const string MainLineUssClassName = LogItemUssClassName + "__main";
@@ -43,10 +44,12 @@ namespace Silentor.CheatPanel.UI
             _stackLabel.AddToClassList( StackUssClassName );
             Add( _stackLabel );
 
+            //Expand stack trace on double click
             var openStackManip = new Clickable( ( ) =>
             {
                 _stackLabel.ToggleInClassList( StackExpandedUssClassName );
             } );
+            openStackManip.activators.Clear();
             openStackManip.activators.Add( new ManipulatorActivationFilter(){button = MouseButton.LeftMouse, clickCount = 2} );
             mainLineContainer.AddManipulator( openStackManip );
         }

@@ -26,7 +26,7 @@ namespace Silentor.CheatPanel.DevProject
 
             await Awaitable.WaitForSecondsAsync( 1, destroyCancellationToken );
 
-            cheats.AddCheats( new LogMessagesCheats() );
+            cheats.AddCheats( new LogMessagesCheats( this ) );
 
             //cheats.AddCheats( new MetaGameCheats() );
 

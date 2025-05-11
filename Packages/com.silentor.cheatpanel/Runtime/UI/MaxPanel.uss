@@ -1,0 +1,72 @@
+:root {
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+.root--top {
+    justify-content: flex-start;
+}
+
+.root--top > #CheatMaxPanel {
+    max-height: 50%;
+}
+
+.root--bottom {
+    justify-content: flex-end;
+}
+
+.root--bottom > #CheatMaxPanel {
+    max-height: 50%;
+}
+
+.root--full {
+    justify-content: flex-start;
+}
+
+.root--full > #CheatMaxPanel {
+    max-height: 100%;
+}
+
+#CheatMaxPanel {
+    flex-shrink: 1;
+    flex-grow: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 2px;
+}
+
+.tab-view__header{
+    flex-direction: row;
+}
+
+.tab-view__tool-btn {
+    min-height: 20px;
+    max-height: 20px;
+    min-width: 20px;
+    max-width: 20px;
+    margin: 1px;
+    padding: 1px;
+}
+
+.tab-view__tab-btn{
+    margin: 1px;
+    padding: 1px;
+    min-width: 22px;
+}
+
+.tab-view__tab-btn--selected {
+    background-color: var(--unity-colors-button-background-pressed);
+    border-color: var(--unity-colors-button-border-pressed);
+}
+
+.tab-view__result {
+    display: none;
+    transition-property: opacity, display;
+    transition-duration: 0.5s;
+    opacity: 0;
+    white-space: normal;
+}
+
+.tab-view__result--show {
+    display: flex;
+    opacity: 1;
+}

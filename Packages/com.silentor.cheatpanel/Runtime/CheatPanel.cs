@@ -15,6 +15,17 @@ namespace Silentor.CheatPanel
 {
     public class CheatPanel : MonoBehaviour
     {
+        public const string DockTopUssClassName = "root--top";
+        public const string DockBottomUssClassName = "root--bottom";
+        public const string DockFullUssClassName = "root--full";
+
+        public const string TabBtnUssClassName = "tab-view__tab-btn";
+        public const string SelectedTabBtnUssClassName = "tab-view__tab-btn--selected";
+
+        public const String TabViewResultUssClassName     = ".tab-view__result";
+        public const String TabViewResultShowUssClassName = TabViewResultUssClassName + "--show";
+
+
         /// <summary>
         /// Add cheats to the cheat panel.
         /// </summary>
@@ -55,18 +66,17 @@ namespace Silentor.CheatPanel
         private          CheatTab                    _selectedTab;
         private          Label                       _resultLbl;
         private          IVisualElementScheduledItem _resultTransitionTask;
+        private         EDockMode                   _dockMode;
 
-        private VisualElement _maximizedPanelUI;
+        private VisualElement _maximizedPanelTemplateContainer;
         private VisualElement _contentContainer;
         private VisualElement _tabButtonsContainer;
+        private Button _dockBtn;
 
         private VisualElement _minimizedPanelUI;
 
         private SystemTab _systemTab;
         
-
-        private const String TabViewResultUssClassName = "TabView__result";
-        private const String TabViewResultShowUssClassName = TabViewResultUssClassName + "--show";
 
 
         private void Awake( )
@@ -74,6 +84,8 @@ namespace Silentor.CheatPanel
             _doc             = GetComponent<UIDocument>();
             _settingsManager = new Settings();
             _settings        = _settingsManager.GetSettings();
+            _dockMode = _settings.GetEnumValueSafe<EDockMode>( _settings.DockMode );
+
             _fpsMeter        = new FpsMeter();
             _fpsMeter.StartMeter();
 
@@ -86,6 +98,7 @@ namespace Silentor.CheatPanel
             _selectedTab = logTab;
             
             ShowPanel( );
+            ChangeDockMode( null, _dockMode );
         }
 
         private void OnDestroy( )
@@ -94,30 +107,37 @@ namespace Silentor.CheatPanel
 
             foreach ( var cheatTab in _tabs )                
                 cheatTab.Dispose();
+
+            _settings.DockMode = (int)_dockMode;
+            _settingsManager.UpdateSettings();
         }
 
         private void ShowPanel( )
         {
             if( _settings.IsMaximized )
             {
-                if ( _maximizedPanelUI == null )
+                if ( _maximizedPanelTemplateContainer == null )
                 {
                     var panelInstance = Resources.CheatPanelMax.Instantiate( );
+                    panelInstance.pickingMode = PickingMode.Ignore;                                 //Fix TemplateContainer
                     var minimizeBtn   = panelInstance.Q<Button>( "MinimizeBtn" );
                     minimizeBtn.clicked += CheatPanelOnMinMaxToggleClicked;
+                    _dockBtn      = panelInstance.Q<Button>( "DockBtn" );
+                    _dockBtn.clicked += CheatPanelOnDockBtnClicked;
                     _resultLbl          =  panelInstance.Q<Label>( "Result" );
                     _tabButtonsContainer = panelInstance.Q<VisualElement>( "TabsScroll" );
                     _contentContainer = panelInstance.Q<VisualElement>( "Content" );
-                    _maximizedPanelUI = panelInstance;
+                    _maximizedPanelTemplateContainer = panelInstance;
                 }
 
                 var root = _doc.rootVisualElement;
                 root.Clear();
                 //panelInstance.style.paddingTop = Screen.height - Screen.safeArea.yMax;
-                root.Add( _maximizedPanelUI );
+                root.Add( _maximizedPanelTemplateContainer );
 
                 UpdateTabsButtons();
                 SelectTab( _contentContainer, _selectedTab );
+                ChangeDockMode( null, _dockMode );
             }
             else
             {
@@ -139,10 +159,16 @@ namespace Silentor.CheatPanel
             }
         }
 
+        private void CheatPanelOnDockBtnClicked( )
+        {
+            var oldDockMode = _dockMode;
+            var nextDockMode = GetNextDockMode( oldDockMode );
+            ChangeDockMode( oldDockMode,  nextDockMode );
+        }
+
         private void CheatPanelOnMinMaxToggleClicked( )
         {
             _settings.IsMaximized = !_settings.IsMaximized;
-            _settingsManager.UpdateSettings();
             ShowPanel();
         }
 
@@ -166,6 +192,7 @@ namespace Silentor.CheatPanel
                     if ( btnIndex < 0 )     //New tab was added, should add new button
                     {
                         tabButtons.Insert( i, tabButton );
+                        tabButton.AddToClassList( TabBtnUssClassName );
                         tabButton.clicked += () => TabBtnOnclicked( _contentContainer, tab );
                     }
                     else if ( btnIndex != i )           //Fix buttons order
@@ -195,12 +222,12 @@ namespace Silentor.CheatPanel
             {
                 if( cheatTab == selectedTab )
                 {
-                    cheatTab.GetTabButton().AddToClassList( "CheatBtn--pressed" );
+                    cheatTab.GetTabButton().AddToClassList( SelectedTabBtnUssClassName );
                     cheatTab.Show();
                 }
                 else
                 {
-                    cheatTab.GetTabButton().RemoveFromClassList( "CheatBtn--pressed" );
+                    cheatTab.GetTabButton().RemoveFromClassList( SelectedTabBtnUssClassName );
                     cheatTab.Hide();
                 }
             }
@@ -256,6 +283,53 @@ namespace Silentor.CheatPanel
 
             return tab;
         } 
+
+        private void ChangeDockMode( EDockMode? oldDockMode, EDockMode dockMode )
+        {
+            if ( _dockMode == dockMode && oldDockMode != null )
+                return;
+
+            if( oldDockMode.HasValue )
+                _maximizedPanelTemplateContainer.RemoveFromClassList( GetDockStyle( oldDockMode.Value ) );
+            _maximizedPanelTemplateContainer.AddToClassList( GetDockStyle( dockMode ) );
+            var nextDockMode = GetNextDockMode(dockMode);
+            _dockBtn.text = GetDockIconSymbol( nextDockMode );
+            _dockMode = dockMode;
+
+            String GetDockStyle( EDockMode dockMode )
+            {
+                return dockMode switch
+                {
+                    EDockMode.Top => DockTopUssClassName,
+                    EDockMode.Bottom => DockBottomUssClassName,
+                    EDockMode.Full => DockFullUssClassName,
+                    _ => throw new ArgumentOutOfRangeException( nameof(dockMode), dockMode, null )
+                };
+            }
+
+            String GetDockIconSymbol( EDockMode dockMode )
+            {
+                return dockMode switch
+                       {
+                               EDockMode.Top    => "↑",
+                               EDockMode.Bottom => "↓",
+                               EDockMode.Full   => "□",
+                               _                => throw new ArgumentOutOfRangeException( nameof(dockMode), dockMode, null )
+                       };
+            }
+        }
+
+        private EDockMode GetNextDockMode( EDockMode dockMode )
+        {
+            return (EDockMode)(((int)dockMode + 1) % Enum.GetValues( typeof(EDockMode) ).Length);
+        }
        
+    }
+
+    public enum EDockMode
+    {
+        Top,
+        Bottom,
+        Full,
     }
 }

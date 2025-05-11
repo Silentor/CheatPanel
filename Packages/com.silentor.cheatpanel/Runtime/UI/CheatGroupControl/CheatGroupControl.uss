@@ -36,6 +36,3 @@
 .cheat-group__delim--left {
     max-width: 20px;
 }
-
-.TabView__ToolBtn {
-}

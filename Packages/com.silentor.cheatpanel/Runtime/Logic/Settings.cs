@@ -47,6 +47,7 @@ namespace Silentor.CheatPanel
         public bool IsMaximized;
         public int FPSHistogrammMode = (int)FpsMeter.EFPSStats.Worst;
         public bool UpdateFPSHistogramm = true;
+        public int DockMode = (int)EDockMode.Top;
 
         public TEnum GetEnumValueSafe<TEnum>( int value ) where TEnum : Enum
         {

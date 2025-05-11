@@ -6,9 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Silentor.CheatPanel.UI;
+using Unity.Profiling;
 using Unity.Properties;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Profiling;
 using UnityEngine.UIElements;
 using Object = System.Object;
 
@@ -61,7 +63,7 @@ namespace Silentor.CheatPanel
             set
             {
                 _showInfos = value;
-                RebuildFilteredList();
+                ProcessFilterChange();
             }
         }
 
@@ -72,7 +74,7 @@ namespace Silentor.CheatPanel
             set
             {
                 _showWarnings = value;
-                RebuildFilteredList();
+                ProcessFilterChange();
             }
         }
 
@@ -83,7 +85,7 @@ namespace Silentor.CheatPanel
             set
             {
                 _showErrors = value;
-                RebuildFilteredList();
+                ProcessFilterChange();
             }
         }
 
@@ -94,7 +96,7 @@ namespace Silentor.CheatPanel
             set
             {
                 _searchField = value;
-                RebuildFilteredList();
+                ProcessFilterChange();
             }
         }
 
@@ -142,7 +144,7 @@ namespace Silentor.CheatPanel
             base.Show();
 
             Publish();
-            RebuildFilteredList();
+            ProcessFilterChange();
         }
 
         public override void Dispose( )
@@ -173,10 +175,16 @@ namespace Silentor.CheatPanel
 
         private ListView _log;
         private Int64 _version;
+
         private Boolean _showInfos = true;
         private Boolean _showWarnings = true;
         private Boolean _showErrors = true;
         private String _searchField;
+        private Boolean _isFiltered;
+
+        private readonly ProfilerMarker _logItemSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(LogMessageReceivedThreaded)}" );
+        private readonly ProfilerMarker _updateFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(UpdateList)}" );
+        private readonly ProfilerMarker _rebuildFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(ProcessFilterChange)}" ); 
 
         protected override VisualElement GenerateCustomContent( )
         {
@@ -188,7 +196,7 @@ namespace Silentor.CheatPanel
             _log.bindItem += ( logItem, index ) =>
             {
                 var logItemElement = (LogItemElement)logItem;
-                var logData = _filteredLog[ index ];
+                var logData = _isFiltered ? _filteredLog[ index ] : _fullLog[ index ];
                 var timeText = $"[{logData.Time:HH:mm:ss}]";        //todo cache for consecutive items
                 logItemElement.SetLogItem( timeText, logData.ThreadId != _mainThreadId ? $"||{logData.ThreadId}" : null, logData.Log, logData.StackTrace, logData.LogType );
             };
@@ -198,7 +206,7 @@ namespace Silentor.CheatPanel
                 logItemElement.Recycle();
             };
 
-            _log.itemsSource = _filteredLog;
+            _log.itemsSource = _isFiltered ? _filteredLog : _fullLog;
 
             var clearBtn = instance.Q<Button>( "ClearBtn" );
             clearBtn.clicked += ClearLog;
@@ -207,6 +215,14 @@ namespace Silentor.CheatPanel
             saveLogBtn.clicked += SaveLogToFile;
 
             return instance;
+        }
+
+        protected override Button GenerateTabButton( )
+        {
+            var btn = new Button();
+            btn.style.backgroundImage = Background.FromSprite( Resources.TabButtonIcon );
+            btn.style.backgroundSize = new StyleBackgroundSize( new BackgroundSize( BackgroundSizeType.Contain ) );
+            return btn;
         }
 
         private void SaveLogToFile( )
@@ -249,7 +265,7 @@ namespace Silentor.CheatPanel
             _infosCount = _warningsCount = _errorsCount = 0;
             _fullLog.Clear();
             _filteredLog.Clear();
-            RebuildFilteredList();
+            _log.RefreshItems();
             Publish();
         }
 
@@ -258,20 +274,29 @@ namespace Silentor.CheatPanel
             if( _isDisposed || !_isRecording )
                 return;
 
-            Assert.IsTrue( _writeBufferLocked.Count < _capacity, "Write buffer is full, something wrong with UpdateLogBuffer( )" );
+            _logItemSampler.Begin();
 
             LogItem newMessage;
             var logThreadId = Thread.CurrentThread.ManagedThreadId;
             if( logThreadId == _mainThreadId)
-                newMessage = new LogItem( DateTime.Now, condition, stackTrace, type, Time.frameCount, _mainThreadId );
+                newMessage = new LogItem( DateTime.Now, condition, stackTrace, type, Time.frameCount, _mainThreadId );//todo cache DateTime string for consecutive items
             else
-                newMessage = new LogItem( DateTime.Now, condition, stackTrace, type, 0 /*No frame info*/, logThreadId );
+                newMessage = new LogItem( DateTime.Now, condition, stackTrace, type, 0 /*No frame info from other threads*/, logThreadId );
 
             lock ( _lock )
             {
-                _writeBufferLocked.Add( newMessage );
-                _isWriteBufferEmpty = false;
+                if( _writeBufferLocked.Count >= _capacity )
+                {
+                    //Something wrong with UpdateLogBuffer( ), messages are not consumed fast enough. Drop the latest message
+                }
+                else
+                {
+                    _writeBufferLocked.Add( newMessage );
+                    _isWriteBufferEmpty = false;
+                }
             }
+
+            _logItemSampler.End();
         }
 
         private async void UpdateLogBufferAsync( )
@@ -324,7 +349,7 @@ namespace Silentor.CheatPanel
                         if ( IsVisible )
                         {
                             Publish();
-                            UpdateFilteredList( _writeBuffer );
+                            UpdateList( _writeBuffer );
                         }
                     }
                 }
@@ -333,16 +358,36 @@ namespace Silentor.CheatPanel
             }
         }
 
-        //Update filtered list with new values
-        private void UpdateFilteredList( List<LogItem> newEntries )
+        //Update list with new values
+        private void UpdateList( List<LogItem> newEntries )
         {
+            _updateFilteredListSampler.Begin();
+
             //Some fast path's
+            if ( !_isFiltered )
+            {
+                if ( newEntries.Count > 0 )
+                {
+                    if ( newEntries.Count < 100 )
+                    {
+                        for ( int i = 0; i < newEntries.Count; i++ )                            
+                            _log.RefreshItem( _fullLog.Count -  i - 1 );            //Didnt proper update if we stay on the last item
+                    }
+                    else
+                        _log.RefreshItems();
+                }
+
+                _updateFilteredListSampler.End();
+                return;
+            }
+            
             if ( _fullLog.Count == 0 )
             {
                 if( _filteredLog.Count != 0 )
                 {
                     _filteredLog.Clear();
                     _log.RefreshItems();
+                    _updateFilteredListSampler.End();
                     return;
                 } 
             }
@@ -354,6 +399,7 @@ namespace Silentor.CheatPanel
                         _filteredLog.Add( logItem );
                 }
                 _log.RefreshItems();
+                _updateFilteredListSampler.End();
                 return;
             }
             
@@ -371,7 +417,7 @@ namespace Silentor.CheatPanel
                     }
                     else
                     {
-                        var indexOfFirstActualItem = _filteredLog.FindIndex( li => li.Time > oldestFullLogEntryTime );
+                        var indexOfFirstActualItem = _filteredLog.FindIndex( li => li.Time >= oldestFullLogEntryTime );
                         _filteredLog.RemoveRange( 0, indexOfFirstActualItem );
                         wasDeleted = true;
                     }
@@ -390,23 +436,42 @@ namespace Silentor.CheatPanel
 
             if( wasAdded || wasDeleted )
                 _log.RefreshItems();
+
+            _updateFilteredListSampler.End();
         }
 
-        //Completely rebuild filtered list
-        private void RebuildFilteredList( )
+        private void ProcessFilterChange( )
         {
-            _filteredLog.Clear();
-            foreach ( var logItem in _fullLog )
+            _rebuildFilteredListSampler.Begin();
+
+            _isFiltered = IsFiltered();
+
+            if ( _isFiltered )
             {
-                if( IsLogItemVisible( logItem ) )
-                    _filteredLog.Add( logItem );
+                _filteredLog.Clear();
+                foreach ( var logItem in _fullLog )
+                {
+                    if( IsLogItemVisible( logItem ) )
+                        _filteredLog.Add( logItem );
+                }
+
+                _log.itemsSource = _filteredLog;
+                _log.RefreshItems();
+            }
+            else
+            {
+                _log.itemsSource = _fullLog;
+                _log.RefreshItems();
             }
 
-            _log.RefreshItems();
+            _rebuildFilteredListSampler.End();
         }
 
         private bool IsLogItemVisible( LogItem logItem )
         {
+            if ( !_isFiltered )
+                return true;
+
             if( logItem.LogType == LogType.Log )
             {
                 if ( !_showInfos )
@@ -427,6 +492,11 @@ namespace Silentor.CheatPanel
                 return false;
 
             return true;
+        }
+
+        private Boolean IsFiltered( )
+        {
+            return !_showInfos || !_showWarnings || !_showErrors || !string.IsNullOrEmpty( _searchField );
         }
 
         public readonly struct LogItem
@@ -452,6 +522,7 @@ namespace Silentor.CheatPanel
         private static class Resources
         {
             public static readonly VisualTreeAsset Content = UnityEngine.Resources.Load<VisualTreeAsset>( "UnityLogTab" );
+            public static readonly Sprite TabButtonIcon = UnityEngine.Resources.Load<Sprite>( "UnityEditor.ConsoleWindow@2x" );
         }
 
 #region IDataSourceViewHashProvider

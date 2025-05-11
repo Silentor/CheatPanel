@@ -10,11 +10,6 @@ namespace Silentor.CheatPanel
 {
     public class CheatTab : IDisposable
     {
-        public const String TabUssClassName        = "tab";
-        public const String TabContentUssClassName = "tab__content";
-        public const String TabButtonUssClassName  = "tab__button";
-
-
         public readonly  string     Name;
         public readonly  List<CheatGroup>    CheatsGroups     = new();
 
@@ -81,8 +76,6 @@ namespace Silentor.CheatPanel
         private VisualElement GenerateContentUI( )
         {
             var content = new VisualElement();
-            content.AddToClassList( TabContentUssClassName );
-
             var customContent = GenerateCustomContent( );
             if( customContent != null )                
                 content.Add( customContent );
@@ -104,7 +97,6 @@ namespace Silentor.CheatPanel
         {
             var tabBtn      = new Button();
             tabBtn.text = Name;
-            tabBtn.AddToClassList( TabButtonUssClassName );
             return tabBtn;
         }
 
