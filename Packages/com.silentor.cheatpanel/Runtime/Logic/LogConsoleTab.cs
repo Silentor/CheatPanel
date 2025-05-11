@@ -182,6 +182,9 @@ namespace Silentor.CheatPanel
         private String _searchField;
         private Boolean _isFiltered;
 
+        private String _cachedTimeToSeconds;
+        private Int32 _cachedTimeToSecondsHash = -1;
+
         private readonly ProfilerMarker _logItemSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(LogMessageReceivedThreaded)}" );
         private readonly ProfilerMarker _updateFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(UpdateList)}" );
         private readonly ProfilerMarker _rebuildFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(ProcessFilterChange)}" ); 
@@ -197,13 +200,20 @@ namespace Silentor.CheatPanel
             {
                 var logItemElement = (LogItemElement)logItem;
                 var logData = _isFiltered ? _filteredLog[ index ] : _fullLog[ index ];
-                var timeText = $"[{logData.Time:HH:mm:ss}]";        //todo cache for consecutive items
+                var timeText = GetCachedTimeToSeconds( logData.Time );
                 logItemElement.SetLogItem( timeText, logData.ThreadId != _mainThreadId ? $"||{logData.ThreadId}" : null, logData.Log, logData.StackTrace, logData.LogType );
             };
             _log.unbindItem += ( logItem, index ) =>
             {
                 var logItemElement = (LogItemElement)logItem;
                 logItemElement.Recycle();
+            };
+            _log.makeNoneElement += () =>
+            {
+                var emptyLogHelpLbl = new Label( "Shows Unity log messages. Double tap on message to display stack trace. Long press to copy message to clipboard." );
+                emptyLogHelpLbl.style.whiteSpace = WhiteSpace.Normal;
+                emptyLogHelpLbl.style.unityFontStyleAndWeight = FontStyle.Italic;
+                return emptyLogHelpLbl;
             };
 
             _log.itemsSource = _isFiltered ? _filteredLog : _fullLog;
@@ -367,16 +377,7 @@ namespace Silentor.CheatPanel
             //Some fast path's
             if ( !_isFiltered )
             {
-                if ( newEntries.Count > 0 )
-                {
-                    if ( newEntries.Count < 100 )
-                    {
-                        for ( int i = 0; i < newEntries.Count; i++ )                            
-                            _log.RefreshItem( _fullLog.Count -  i - 1 );            //Didnt proper update if we stay on the last item
-                    }
-                    else
-                        _log.RefreshItems();
-                }
+                _log.RefreshItems();            //RefreshItem() doesn't work here
 
                 _updateFilteredListSampler.End();
                 return;
@@ -498,6 +499,18 @@ namespace Silentor.CheatPanel
         private Boolean IsFiltered( )
         {
             return !_showInfos || !_showWarnings || !_showErrors || !string.IsNullOrEmpty( _searchField );
+        }
+
+        private String GetCachedTimeToSeconds( DateTime dateTime )
+        {
+            var timeHash = (dateTime.Hour << 16) | (dateTime.Minute << 8) | dateTime.Second;
+            if( timeHash != _cachedTimeToSecondsHash )
+            {
+                _cachedTimeToSecondsHash = timeHash;
+                _cachedTimeToSeconds = $"[{dateTime:HH:mm:ss}]";
+            }
+
+            return _cachedTimeToSeconds;
         }
 
         public readonly struct LogItem

@@ -13,6 +13,7 @@ namespace Silentor.CheatPanel.UI
         private readonly Label _threadLabel;
 
         private LogType _logType;
+        private String _stackTraceText;
 
         public const string LogItemUssClassName = "log-item";
         public const string MainLineUssClassName = LogItemUssClassName + "__main";
@@ -47,7 +48,12 @@ namespace Silentor.CheatPanel.UI
             //Expand stack trace on double click
             var openStackManip = new Clickable( ( ) =>
             {
-                _stackLabel.ToggleInClassList( StackExpandedUssClassName );
+                if ( !String.IsNullOrEmpty( _stackTraceText ) )
+                {
+                    if ( !_stackLabel.ClassListContains( StackExpandedUssClassName ) )
+                        _stackLabel.text = _stackTraceText;
+                    _stackLabel.ToggleInClassList( StackExpandedUssClassName );
+                }
             } );
             openStackManip.activators.Clear();
             openStackManip.activators.Add( new ManipulatorActivationFilter(){button = MouseButton.LeftMouse, clickCount = 2} );
@@ -63,7 +69,7 @@ namespace Silentor.CheatPanel.UI
                 _threadLabel.style.display = DisplayStyle.Flex;
             }
             _messageLabel.text = message;
-            _stackLabel.text = stackTrace;
+            _stackTraceText = stackTrace;
 
             var logTypeStyle = logType switch
             {
