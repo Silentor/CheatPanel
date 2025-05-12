@@ -103,6 +103,16 @@ namespace Silentor.CheatPanel
             }
         }
 
+        [CreateProperty]
+        public Boolean HighPrecisionMode
+        {
+            get => _highPrecisionMode;
+            set
+            {
+                _highPrecisionMode = value;
+                _log.RefreshItems();
+            }
+        }
 
         public LogConsoleTab( ) : base ("Log")
         {
@@ -171,6 +181,7 @@ namespace Silentor.CheatPanel
         private Boolean _isAutoscroll = true;
         private Boolean _isDisposed;
         private Boolean _isWriteBufferEmpty = true;
+        private Boolean _highPrecisionMode = false;
 
         private uint _logEntryId;
 
@@ -186,13 +197,15 @@ namespace Silentor.CheatPanel
         private Boolean _showErrors = true;
         private String _searchField;
         private Boolean _isFiltered;
+        
 
         private String _cachedTimeToSeconds;
         private Int32 _cachedTimeToSecondsHash = -1;
 
         private readonly ProfilerMarker _logItemSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(LogMessageReceivedThreaded)}" );
         private readonly ProfilerMarker _updateFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(UpdateList)}" );
-        private readonly ProfilerMarker _rebuildFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(ProcessFilterChange)}" ); 
+        private readonly ProfilerMarker _rebuildFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(ProcessFilterChange)}" );
+        
 
         protected override VisualElement GenerateCustomContent( )
         {
@@ -209,7 +222,7 @@ namespace Silentor.CheatPanel
             {
                 var logItemElement = (LogItemElement)logItem;
                 var logData = _isFiltered ? _filteredLog[ index ] : _fullLog[ index ];
-                var timeText = GetCachedTimeToSeconds( logData.Time );
+                var timeText = HighPrecisionMode ? GetCachedTimeHighPrecision( ref logData ) : GetCachedTimeToSeconds( logData.Time );
                 logItemElement.SetLogItem( logData.Id, timeText, logData.ThreadId != _mainThreadId ? $"||{logData.ThreadId}" : null, logData.Log, logData.StackTrace, logData.IsStackExpanded, logData.LogType );
             };
             _log.unbindItem += ( logItem, index ) =>
@@ -483,16 +496,18 @@ namespace Silentor.CheatPanel
                 }
 
                 _log.itemsSource = _filteredLog;
-                _log.RefreshItems();
             }
             else
             {
                 _log.itemsSource = _fullLog;
-                _log.RefreshItems();
             }
 
-            if( IsAutoscroll )
-                _log.ScrollToItem( _log.itemsSource.Count - 1 );
+            //_log.RefreshItems();
+            if ( IsAutoscroll )
+                _log.schedule.Execute( ( ) => _log.ScrollToItem( -1 ) ); //Because its not fixed https://issuetracker.unity3d.com/issues/scrolltoitem-should-work-on-the-same-frame-the-layout-size-is-updated
+                //_log.ScrollToItem( -1 );
+            else
+                _log.RefreshItems();
 
             _rebuildFilteredListSampler.End();
         }
@@ -540,6 +555,23 @@ namespace Silentor.CheatPanel
 
             return _cachedTimeToSeconds;
         }
+
+        private String GetCachedTimeHighPrecision(ref LogItem logItem )
+        {
+            // var timeHash = (dateTime.Hour << 16) | (dateTime.Minute << 8) | dateTime.Second;
+            // if( timeHash != _cachedTimeToSecondsHash )
+            // {
+            //     _cachedTimeToSecondsHash = timeHash;
+            //     _cachedTimeToSeconds     = $"[{dateTime:HH:mm:ss}]";
+            // }
+            //
+            // return _cachedTimeToSeconds;
+
+            if( logItem.ThreadId == _mainThreadId )
+                return $"[{logItem.Time:HH:mm:ss.fff}] {logItem.FrameCount}";
+            return $"[{logItem.Time:HH:mm:ss.fff}]";
+        }
+
 
         public struct LogItem : IComparable<LogItem>, IEquatable<LogItem>
         {

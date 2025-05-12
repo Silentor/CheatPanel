@@ -11,6 +11,11 @@
                 </Bindings>
             </ui:Toggle>
             <ui:VisualElement style="flex-grow: 1;" />
+            <ui:Toggle name="HighPrecisionTgl" class="toggle-button" style="background-image: resource(&apos;timer&apos;); -unity-background-image-tint-color: rgb(70, 96, 124);">
+                <Bindings>
+                    <ui:DataBinding property="value" data-source-path="HighPrecisionMode" binding-mode="TwoWay" />
+                </Bindings>
+            </ui:Toggle>
             <ui:Toggle name="AutoscrollTgl" tooltip="Autoscroll to new log entry" class="toggle-button" style="background-image: resource(&apos;vertical_align_bottom&apos;); -unity-background-image-tint-color: rgb(70, 96, 124);">
                 <Bindings>
                     <ui:DataBinding property="value" data-source-path="IsAutoscroll" binding-mode="TwoWay" />
