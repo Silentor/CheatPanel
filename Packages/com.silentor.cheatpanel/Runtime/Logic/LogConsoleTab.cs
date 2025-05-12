@@ -284,9 +284,9 @@ namespace Silentor.CheatPanel
                     foreach ( var logItem in _fullLog )
                     {
                         if ( logItem.ThreadId != _mainThreadId )
-                            fileWriter.WriteLine( $"[{logItem.Time:HH:mm:ss.fff}]  {logItem.LogType} {logItem.ThreadId} {logItem.Log}" );
+                            fileWriter.WriteLine( $"[{logItem.Time:HH:mm:ss.fff}] thread {logItem.ThreadId} {logItem.LogType} {logItem.Log}" );
                         else
-                            fileWriter.WriteLine( $"[{logItem.Time:HH:mm:ss.fff}]  {logItem.LogType} {logItem.Log}" );
+                            fileWriter.WriteLine( $"[{logItem.Time:HH:mm:ss.fff}] frame {logItem.FrameCount} {logItem.LogType} {logItem.Log}" );
                         if ( !String.IsNullOrEmpty( logItem.StackTrace ) )
                         {
                             using var sr = new System.IO.StringReader( logItem.StackTrace );
