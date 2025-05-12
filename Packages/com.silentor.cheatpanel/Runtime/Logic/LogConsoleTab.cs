@@ -16,6 +16,9 @@ using Object = System.Object;
 
 namespace Silentor.CheatPanel
 {
+    /// <summary>
+    /// To track log messages I use uint id. So after a very long time message binary search will be work wrong
+    /// </summary>
     [GeneratePropertyBag]
     public partial class LogConsoleTab : CheatTab, IDataSourceViewHashProvider, IDisposable
     {
@@ -169,12 +172,14 @@ namespace Silentor.CheatPanel
         private Boolean _isDisposed;
         private Boolean _isWriteBufferEmpty = true;
 
+        private uint _logEntryId;
+
         private int _infosCount;
         private int _warningsCount;
         private int _errorsCount;
 
         private ListView _log;
-        private Int64 _version;
+        private Int64 _bindingVersion;
 
         private Boolean _showInfos = true;
         private Boolean _showWarnings = true;
@@ -195,13 +200,17 @@ namespace Silentor.CheatPanel
             instance.dataSource = this;
 
             _log = instance.Q<ListView>(  );
-            _log.makeItem += () => new LogItemElement();
+            _log.makeItem += () =>
+            {
+                var newLogElement = new LogItemElement( OnToggleStackTrace );
+                return newLogElement;
+            };
             _log.bindItem += ( logItem, index ) =>
             {
                 var logItemElement = (LogItemElement)logItem;
                 var logData = _isFiltered ? _filteredLog[ index ] : _fullLog[ index ];
                 var timeText = GetCachedTimeToSeconds( logData.Time );
-                logItemElement.SetLogItem( timeText, logData.ThreadId != _mainThreadId ? $"||{logData.ThreadId}" : null, logData.Log, logData.StackTrace, logData.LogType );
+                logItemElement.SetLogItem( logData.Id, timeText, logData.ThreadId != _mainThreadId ? $"||{logData.ThreadId}" : null, logData.Log, logData.StackTrace, logData.IsStackExpanded, logData.LogType );
             };
             _log.unbindItem += ( logItem, index ) =>
             {
@@ -225,6 +234,19 @@ namespace Silentor.CheatPanel
             saveLogBtn.clicked += SaveLogToFile;
 
             return instance;
+        }
+
+        private void OnToggleStackTrace( uint logEntryId )
+        {
+            //Store expanded/collapsed state of stack trace
+            var actualList = _isFiltered ? _filteredLog : _fullLog;
+            var index = actualList.BinarySearch( new LogItem( logEntryId ) );
+            if ( index >= 0 )
+            {
+                var logItem = actualList[ index ];
+                logItem.IsStackExpanded = !logItem.IsStackExpanded;
+                actualList[ index ] = logItem;
+            }
         }
 
         protected override Button GenerateTabButton( )
@@ -289,10 +311,9 @@ namespace Silentor.CheatPanel
 
             LogItem newMessage;
             var logThreadId = Thread.CurrentThread.ManagedThreadId;
-            if( logThreadId == _mainThreadId)
-                newMessage = new LogItem( DateTime.Now, condition, stackTrace, type, Time.frameCount, _mainThreadId );//todo cache DateTime string for consecutive items
-            else
-                newMessage = new LogItem( DateTime.Now, condition, stackTrace, type, 0 /*No frame info from other threads*/, logThreadId );
+            var frameCount = 0;
+            if ( logThreadId == _mainThreadId )
+                frameCount = Time.frameCount;
 
             lock ( _lock )
             {
@@ -302,6 +323,8 @@ namespace Silentor.CheatPanel
                 }
                 else
                 {
+                    unchecked { _logEntryId++; }
+                    newMessage = new LogItem( _logEntryId, DateTime.Now, condition, stackTrace, type, frameCount, logThreadId );
                     _writeBufferLocked.Add( newMessage );
                     _isWriteBufferEmpty = false;
                 }
@@ -518,8 +541,9 @@ namespace Silentor.CheatPanel
             return _cachedTimeToSeconds;
         }
 
-        public readonly struct LogItem
+        public struct LogItem : IComparable<LogItem>, IEquatable<LogItem>
         {
+            public readonly UInt32 Id;
             public readonly DateTime Time;
             public readonly String Log;
             public readonly String StackTrace;
@@ -527,14 +551,54 @@ namespace Silentor.CheatPanel
             public readonly Int32 FrameCount;
             public readonly int ThreadId;
 
-            public LogItem( DateTime time, String log, String stackTrace, LogType logType, int frameCount, Int32 threadId )
+            public Boolean IsStackExpanded;
+
+            public LogItem( UInt32 id, DateTime time, String log, String stackTrace, LogType logType, int frameCount, Int32 threadId )
             {
+                Id = id;
                 Time = time;
                 Log = log;
                 StackTrace = stackTrace;
                 LogType = logType;
                 FrameCount = frameCount;
                 ThreadId = threadId;
+
+                IsStackExpanded = false;
+            }
+
+            public LogItem( UInt32 searchKey ) : this(searchKey, default, null, null, LogType.Log, 0, 0 )
+            {
+                //Empty constructor for binary search
+            }
+
+            public int CompareTo(LogItem other)
+            {
+                return Id.CompareTo( other.Id );
+            }
+
+            public bool Equals(LogItem other)
+            {
+                return Id == other.Id;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is LogItem other && Equals( other );
+            }
+
+            public override int GetHashCode( )
+            {
+                return (int) Id;
+            }
+
+            public static bool operator ==(LogItem left, LogItem right)
+            {
+                return left.Equals( right );
+            }
+
+            public static bool operator !=(LogItem left, LogItem right)
+            {
+                return !left.Equals( right );
             }
         }
 
@@ -548,12 +612,12 @@ namespace Silentor.CheatPanel
 
         Int64  IDataSourceViewHashProvider.GetViewHashCode( )
         {
-            return _version;
+            return _bindingVersion;
         }
 
         private void Publish( )
         {
-            unchecked { _version++; }
+            unchecked { _bindingVersion++; }
         }
 
 #endregion

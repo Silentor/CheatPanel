@@ -12,6 +12,9 @@ namespace Silentor.CheatPanel.UI
         private readonly Label _stackLabel;
         private readonly Label _threadLabel;
 
+        private readonly Action<UInt32> _onDoubleClick;
+
+        private UInt32 _id;
         private LogType _logType;
         private String _stackTraceText;
 
@@ -26,7 +29,7 @@ namespace Silentor.CheatPanel.UI
         public const string WarningLogItemUssClassName = LogItemUssClassName + "--warning";
         public const string InfoLogItemUssClassName = LogItemUssClassName + "--info";
 
-        public LogItemElement( )
+        public LogItemElement( Action<uint> onDoubleClick )
         {
             AddToClassList( LogItemUssClassName );
             var mainLineContainer = new VisualElement();
@@ -45,24 +48,38 @@ namespace Silentor.CheatPanel.UI
             _stackLabel.AddToClassList( StackUssClassName );
             Add( _stackLabel );
 
-            //Expand stack trace on double click
-            var openStackManip = new Clickable( ( ) =>
+            _onDoubleClick = onDoubleClick;
+
+            //Expand/collapse stack trace on double click
+            var toggleStackManip = new DoubleClickManipulator( () =>
             {
-                if ( !String.IsNullOrEmpty( _stackTraceText ) )
-                {
-                    if ( !_stackLabel.ClassListContains( StackExpandedUssClassName ) )
-                        _stackLabel.text = _stackTraceText;
-                    _stackLabel.ToggleInClassList( StackExpandedUssClassName );
-                }
+                ToggleStackTraceExpand();
+                _onDoubleClick.Invoke( _id );
             } );
-            openStackManip.activators.Clear();
-            openStackManip.activators.Add( new ManipulatorActivationFilter(){button = MouseButton.LeftMouse, clickCount = 2} );
-            mainLineContainer.AddManipulator( openStackManip );
+            toggleStackManip.target = mainLineContainer;
+
+            var closeStackManip = new DoubleClickManipulator( ( ) =>
+            {
+                _stackLabel.RemoveFromClassList( StackExpandedUssClassName );
+                _onDoubleClick.Invoke( _id );
+            } );
+            closeStackManip.target = _stackLabel;
         }
 
-        public void SetLogItem( String time, String threadId, String message, String stackTrace, LogType logType )
+        private void ToggleStackTraceExpand( )
         {
-            _timeLabel.text = time;
+            if ( !String.IsNullOrEmpty( _stackTraceText ) )
+            {
+                if ( !_stackLabel.ClassListContains( StackExpandedUssClassName ) ) 
+                    _stackLabel.text = _stackTraceText;
+                _stackLabel.ToggleInClassList( StackExpandedUssClassName );
+            }
+        }
+
+        public void SetLogItem( UInt32 id, String timeStr, String threadId, String message, String stackTrace, Boolean stackTraceExpandedState, LogType logType )
+        {
+            _id = id;
+            _timeLabel.text = timeStr;
             if ( !String.IsNullOrEmpty( threadId ) )
             {
                 _threadLabel.text = threadId;
@@ -86,6 +103,11 @@ namespace Silentor.CheatPanel.UI
             _threadLabel.AddToClassList( logTypeStyle );
             _messageLabel.AddToClassList( logTypeStyle );
             _stackLabel.AddToClassList( logTypeStyle );
+
+            if ( !String.IsNullOrEmpty( stackTrace ) && stackTraceExpandedState )
+            {
+                ToggleStackTraceExpand();
+            }
         }
 
         public void Recycle( )
