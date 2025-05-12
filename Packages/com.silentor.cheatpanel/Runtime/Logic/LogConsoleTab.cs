@@ -165,7 +165,7 @@ namespace Silentor.CheatPanel
         private readonly Int32 _mainThreadId;
         private readonly Object _lock = new ( );
         private Boolean _isRecording;
-        private Boolean _isAutoscroll;
+        private Boolean _isAutoscroll = true;
         private Boolean _isDisposed;
         private Boolean _isWriteBufferEmpty = true;
 
@@ -361,6 +361,8 @@ namespace Silentor.CheatPanel
                         {
                             Publish();
                             UpdateList( _writeBuffer );
+                            if( IsAutoscroll )
+                                _log.ScrollToItem( _log.itemsSource.Count - 1 );
                         }
                     }
                 }
@@ -465,6 +467,9 @@ namespace Silentor.CheatPanel
                 _log.itemsSource = _fullLog;
                 _log.RefreshItems();
             }
+
+            if( IsAutoscroll )
+                _log.ScrollToItem( _log.itemsSource.Count - 1 );
 
             _rebuildFilteredListSampler.End();
         }
