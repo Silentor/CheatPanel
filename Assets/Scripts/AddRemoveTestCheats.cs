@@ -7,6 +7,7 @@ namespace Silentor.CheatPanel.DevProject
         private readonly CheatPanel _panel;
         private Test1Cheats _cheats1;
         private Test2Cheats _cheats2;
+        private int _instanceCount;
 
         public AddRemoveTestCheats( CheatPanel panel )
         {
@@ -23,6 +24,12 @@ namespace Silentor.CheatPanel.DevProject
         {
             _cheats2 = new Test2Cheats();
             _panel.AddCheats( _cheats2 );
+        }
+
+        public void AddNamedCheat3( )
+        {
+            var cheats3 = new Test3Cheats();
+            _panel.AddCheats( cheats3, $"Named{_instanceCount++}" );
         }
 
         public void RemoveCheat1( )
