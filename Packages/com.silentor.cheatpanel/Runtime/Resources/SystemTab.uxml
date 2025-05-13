@@ -55,13 +55,51 @@
                     </Bindings>
                 </ui:EnumField>
                 <ui:VisualElement style="flex-grow: 1;" />
-                <ui:Toggle label="Update" name="FPSHistoUpdate" class="CheatToggle">
+                <ui:Toggle label="Update" name="FPSHistoUpdate">
                     <Bindings>
                         <ui:DataBinding property="value" data-source-path="FPSUpdateHistoMode" binding-mode="TwoWay" />
                     </Bindings>
                 </ui:Toggle>
             </ui:VisualElement>
             <Silentor.CheatPanel.UI.FpsHistogram name="FpsHistogram" class="CheatLine" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Log">
+            <ui:VisualElement class="CheatLine" style="flex-grow: 1;">
+                <ui:Toggle label="Log enabled" name="LogEnabled">
+                    <Bindings>
+                        <ui:DataBinding property="value" data-source-path="LogEnabled" binding-mode="TwoWay" />
+                    </Bindings>
+                </ui:Toggle>
+                <ui:EnumField label="level" value="Log" type="Silentor.CheatPanel.SystemTab+ELogTypeSorted, Silentor.CheatPanel" name="LogLevel">
+                    <Bindings>
+                        <ui:DataBinding property="value" data-source-path="LogLevel" binding-mode="TwoWay" />
+                    </Bindings>
+                </ui:EnumField>
+            </ui:VisualElement>
+            <ui:VisualElement class="CheatLine" style="flex-grow: 1; flex-wrap: wrap;">
+                <ui:EnumField label="Stack log" value="Script" type="Silentor.CheatPanel.SystemTab+EStackTraceLogType, Silentor.CheatPanel" name="LogStackTrace">
+                    <Bindings>
+                        <ui:DataBinding property="value" data-source-path="LogStackTrace" binding-mode="TwoWay" />
+                    </Bindings>
+                </ui:EnumField>
+                <ui:EnumField label="error" value="Script" type="Silentor.CheatPanel.SystemTab+EStackTraceLogType, Silentor.CheatPanel" name="ErrorStackTrace">
+                    <Bindings>
+                        <ui:DataBinding property="value" data-source-path="ErrorStackTrace" binding-mode="TwoWay" />
+                    </Bindings>
+                </ui:EnumField>
+            </ui:VisualElement>
+            <ui:VisualElement class="CheatLine" style="flex-grow: 1;">
+                <ui:Toggle label="Dev console enabled">
+                    <Bindings>
+                        <ui:DataBinding property="value" data-source-path="DevConsoleEnabled" binding-mode="TwoWay" />
+                    </Bindings>
+                </ui:Toggle>
+                <ui:Toggle label="visible">
+                    <Bindings>
+                        <ui:DataBinding property="value" data-source-path="DevConsoleVisible" binding-mode="TwoWay" />
+                    </Bindings>
+                </ui:Toggle>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

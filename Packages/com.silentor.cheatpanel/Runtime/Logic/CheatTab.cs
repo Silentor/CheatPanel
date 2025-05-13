@@ -73,9 +73,11 @@ namespace Silentor.CheatPanel
         private          VisualElement      _contentUI;
         private          Button             _buttonUI;
 
-        private VisualElement GenerateContentUI( )
+        protected virtual VisualElement GenerateContentUI( )
         {
-            var content = new VisualElement();
+            var content = new ScrollView();
+            content.mode = ScrollViewMode.Vertical;
+
             var customContent = GenerateCustomContent( );
             if( customContent != null )                
                 content.Add( customContent );

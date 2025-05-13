@@ -1,12 +1,10 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Debug = UnityEngine.Debug;
-using Object = System.Object;
 
 namespace Silentor.CheatPanel.DevProject
 {
@@ -20,13 +18,17 @@ namespace Silentor.CheatPanel.DevProject
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         async void Start()
         {
-           
+            //Debug.unityLogger.filterLogType
 
             var cheats = FindAnyObjectByType<CheatPanel>();
 
             await Awaitable.WaitForSecondsAsync( 1, destroyCancellationToken );
 
             cheats.AddCheats( new LogMessagesCheats( this ) );
+
+            //await Awaitable.WaitForSecondsAsync( 3, destroyCancellationToken );
+
+            //Debug.unityLogger.filterLogType = LogType.Exception;
 
             //cheats.AddCheats( new MetaGameCheats() );
 

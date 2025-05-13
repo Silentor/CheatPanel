@@ -12,6 +12,7 @@ using UnityEngine.UIElements;
 using Screen = UnityEngine.Device.Screen;
 using SystemInfo = UnityEngine.Device.SystemInfo;
 using Application = UnityEngine.Device.Application;
+using Debug = UnityEngine.Debug;
 using Object = System.Object;
 
 [assembly: GeneratePropertyBagsForAssembly] 
@@ -26,20 +27,29 @@ namespace Silentor.CheatPanel
     {
         private readonly FpsMeter _fpsMeter;
         private readonly Settings _settings;
-        private float _lastTImeScale = -1f;
-        private int   _lastTargetFps       = -2;
         private Int64 _version;
         private Boolean _updateFPSHistogram = true;
         private FpsMeter.EFPSStats     _FPSHistogramMode = FpsMeter.EFPSStats.Worst;
         private FpsHistogram _histo;
         private FpsMeter.Stats[] _pausedHistogrammData;
         private Boolean _isDisposed;
+        private ILogger _logger;
+
+
+        private SmartProperty<Single> _timeScaleProperty;
+        private SmartProperty<Int32> _targetFrameRateProperty;
+        private SmartProperty<Boolean> _logEnabledProperty;
+        private SmartPropertyEnum<ELogTypeSorted> _logLevelProperty;
+        private SmartPropertyEnum<EStackTraceLogType> _logStackProperty;
+        private SmartPropertyEnum<EStackTraceLogType> _logErrorStackProperty;
+        private SmartProperty<Boolean> _devConsoleEnabledProperty;
+        private SmartProperty<Boolean> _devConsoleVisibleProperty;
 
         [CreateProperty ]
         public float TimeScale
         {
-            get => Time.timeScale;
-            set => Time.timeScale = value;
+            get => _timeScaleProperty.Value;
+            set => _timeScaleProperty.Value = value;
         }
 
         [CreateProperty]
@@ -51,8 +61,8 @@ namespace Silentor.CheatPanel
         [CreateProperty ]
         public int TargetFPS
         {
-            get => Application.targetFrameRate;
-            set => Application.targetFrameRate = value;
+            get => _targetFrameRateProperty.Value;
+            set => _targetFrameRateProperty.Value = value;
         }
 
         [CreateProperty]
@@ -95,11 +105,60 @@ namespace Silentor.CheatPanel
             }
         }
 
+        [CreateProperty]
+        public StackTraceLogType LogStackTraceType
+        {
+            get => Application.GetStackTraceLogType( LogType.Log );
+            set => Application.SetStackTraceLogType( LogType.Log, value );
+        }
 
-        public SystemTab( FpsMeter fpsMeter, Settings settings ) : base ( "System" )
+        [CreateProperty]
+        public Boolean LogEnabled
+        {
+            get => _logEnabledProperty.Value;
+            set => _logEnabledProperty.Value = value;
+        }
+
+        [CreateProperty]
+        public ELogTypeSorted LogLevel
+        {
+            get => _logLevelProperty.Value;
+            set => _logLevelProperty.Value = value;
+        }
+
+        [CreateProperty]
+        public EStackTraceLogType LogStackTrace
+        {
+            get => _logStackProperty.Value;
+            set => _logStackProperty.Value = value;
+        }
+
+        [CreateProperty]
+        public EStackTraceLogType ErrorStackTrace
+        {
+            get => _logErrorStackProperty.Value;
+            set => _logErrorStackProperty.Value = value;
+        }
+
+        [CreateProperty]
+        public Boolean DevConsoleEnabled
+        {
+            get => _devConsoleEnabledProperty.Value;
+            set => _devConsoleEnabledProperty.Value = value;
+        }
+
+        [CreateProperty]
+        public Boolean DevConsoleVisible
+        {
+            get => _devConsoleVisibleProperty.Value;
+            set => _devConsoleVisibleProperty.Value = value;
+        }
+
+        public SystemTab( FpsMeter fpsMeter, Settings settings, ILogger logger = null ) : base ( "System" )
         {
             _fpsMeter = fpsMeter;
             _settings = settings;
+            _logger = logger ?? Debug.unityLogger;
         }
 
         protected override VisualElement GenerateCustomContent( )
@@ -107,6 +166,7 @@ namespace Silentor.CheatPanel
             var instance = Resources.Content.Instantiate( );
             instance.dataSource = this;
 
+            //Device, OS and app section
             var sysInfoBox       = instance.Q<VisualElement>( "DeviceInfo" );
             var sysInfoLabel     = sysInfoBox.Q<Label>( "DeviceInfoValue" );
             var expandSysInfoBtn = sysInfoBox.Q<Button>( "ExpandBtn" );
@@ -116,7 +176,9 @@ namespace Silentor.CheatPanel
             timescaleBox.Q<Button>( "TS_0" ).clicked   += ( ) => Time.timeScale = 0;
             timescaleBox.Q<Button>( "TS_0-1" ).clicked += ( ) => Time.timeScale = 0.1f;
             timescaleBox.Q<Button>( "TS_1" ).clicked   += ( ) => Time.timeScale = 1;
+            _timeScaleProperty = new SmartProperty<Single>( () => Time.timeScale, v => Time.timeScale = v );
 
+            //FPS section
             var fpsBox = instance.Q<VisualElement>( "FPS" );
             // Mobile oriented controls
             fpsBox.Q<Button>( "FPS_X" ).clicked += () => Application.targetFrameRate = -1;
@@ -138,9 +200,32 @@ namespace Silentor.CheatPanel
             };
             _FPSHistogramMode = _settings.GetSettings().GetFPSHistogrammMode();
             _updateFPSHistogram = _settings.GetSettings().UpdateFPSHistogramm;
+            _targetFrameRateProperty = new SmartProperty<Int32>( () => Application.targetFrameRate, v => Application.targetFrameRate = v );
 
             //todo add desktop controls (vSync)
 
+            //Logger section
+            _logger = Debug.unityLogger;
+            _logEnabledProperty = new SmartProperty<bool>( () => _logger.logEnabled, value => _logger.logEnabled = value );
+            _logLevelProperty = new SmartPropertyEnum<ELogTypeSorted>( () => LogTypeConvert( _logger.filterLogType ), value => _logger.filterLogType = LogTypeConvert( value ) );
+            _logStackProperty = new SmartPropertyEnum<EStackTraceLogType>( ( ) => StackTraceConvert( Application.GetStackTraceLogType( LogType.Log ) ),
+                    value  =>
+                    {
+                        var valueConverted = StackTraceConvert( value );
+                        Application.SetStackTraceLogType( LogType.Log, valueConverted );
+                        Application.SetStackTraceLogType( LogType.Warning, valueConverted );
+                    } );
+            _logErrorStackProperty = new SmartPropertyEnum<EStackTraceLogType>( ( ) => StackTraceConvert( Application.GetStackTraceLogType( LogType.Error ) ),
+                    value  =>
+                    {
+                        var valueConverted = StackTraceConvert( value );
+                        Application.SetStackTraceLogType( LogType.Error, valueConverted );
+                        Application.SetStackTraceLogType( LogType.Exception, valueConverted );
+                        Application.SetStackTraceLogType( LogType.Assert, valueConverted );
+                    } );
+            _devConsoleEnabledProperty = new SmartProperty<Boolean>( () => Debug.developerConsoleEnabled, v => Debug.developerConsoleEnabled = v );
+            _devConsoleVisibleProperty = new SmartProperty<Boolean>( () => Debug.developerConsoleVisible, v => Debug.developerConsoleVisible = v );
+            
             CheckUpdatesAsync( );
 
             return instance;
@@ -177,13 +262,14 @@ namespace Silentor.CheatPanel
                              $"CPU: {SystemInfo.processorType}\n"           +
                              $"GPU: {SystemInfo.graphicsDeviceName}\n"      +
                              $"Name: {SystemInfo.deviceName}\n"             +
-                             $" UID: {SystemInfo.deviceUniqueIdentifier}\n" +
+                             $"UID: {SystemInfo.deviceUniqueIdentifier}\n" +
                              $"OS: {SystemInfo.operatingSystem}\n"          +
                              //GetApplicationId() +
                              $"App Version: {Application.version}\n"          +
                              $"Lang: {Application.systemLanguage}\n"          +
                              $"Unity: {Application.unityVersion}\n"           +
                              $"Pers path: {Application.persistentDataPath}\n" +
+                             (!String.IsNullOrEmpty(Application.consoleLogPath) ? $"Log path: {Application.consoleLogPath}\n" : "") +
                              $"Screen res: {Screen.currentResolution}\n"      +
                              $"DPI: {Screen.dpi}\n";
 
@@ -198,6 +284,54 @@ namespace Silentor.CheatPanel
             return String.Empty;
         }
 
+        private static LogType LogTypeConvert( ELogTypeSorted logType )
+        {
+            return logType switch
+            {
+                ELogTypeSorted.Log      => LogType.Log,
+                ELogTypeSorted.Warn     => LogType.Warning,
+                ELogTypeSorted.Assert   => LogType.Assert,
+                ELogTypeSorted.Error    => LogType.Error,
+                ELogTypeSorted.Exception => LogType.Exception,
+                _                       => throw new ArgumentOutOfRangeException( nameof(logType), logType, null )
+            };
+        }
+        
+        private static ELogTypeSorted LogTypeConvert( LogType logType )
+        {
+            return logType switch
+            {
+                LogType.Log      => ELogTypeSorted.Log,
+                LogType.Warning  => ELogTypeSorted.Warn,
+                LogType.Assert   => ELogTypeSorted.Assert,
+                LogType.Error    => ELogTypeSorted.Error,
+                LogType.Exception => ELogTypeSorted.Exception,
+                _               => throw new ArgumentOutOfRangeException( nameof(logType), logType, null )
+            };
+        }
+
+        private static StackTraceLogType StackTraceConvert( EStackTraceLogType logType )
+        {
+            return logType switch
+            {
+                EStackTraceLogType.None  => StackTraceLogType.None,
+                EStackTraceLogType.Script => StackTraceLogType.ScriptOnly,
+                EStackTraceLogType.Full   => StackTraceLogType.Full,
+                _                        => throw new ArgumentOutOfRangeException( nameof(logType), logType, null )
+            };
+        }
+
+        private static EStackTraceLogType StackTraceConvert( StackTraceLogType logType )
+        {
+            return logType switch
+            {
+                StackTraceLogType.None  => EStackTraceLogType.None,
+                StackTraceLogType.ScriptOnly => EStackTraceLogType.Script,
+                StackTraceLogType.Full   => EStackTraceLogType.Full,
+                _                        => throw new ArgumentOutOfRangeException( nameof(logType), logType, null )
+            };
+        }
+
         /// <summary>
         /// Frequently check for updates of some system settings
         /// </summary>
@@ -208,19 +342,27 @@ namespace Silentor.CheatPanel
             {
                 if ( IsVisible )
                 {
-                    if( Math.Abs( Time.timeScale - _lastTImeScale ) > 0.01f )
+                    if( _timeScaleProperty.CheckExternalChanges() )
                     {
-                        _lastTImeScale = Time.timeScale;
                         //Notify( nameof(TimeScale) );
                         //Notify( nameof(TimeScaleLabel) );
                         Publish();
                     }
 
-                    if ( Application.targetFrameRate != _lastTargetFps )
+                    if ( _targetFrameRateProperty.CheckExternalChanges() )
                     {
-                        _lastTargetFps = Application.targetFrameRate;
                         Publish();
                     }
+
+                    if( _logEnabledProperty.CheckExternalChanges() || _logLevelProperty.CheckExternalChanges() )
+                        Publish();
+
+                    if( _logStackProperty.CheckExternalChanges() || _logErrorStackProperty.CheckExternalChanges() )
+                        Publish();
+
+                    if( _devConsoleEnabledProperty.CheckExternalChanges() || _devConsoleVisibleProperty.CheckExternalChanges() )
+                        Publish();
+
                 }
 
                 await Task.Delay( 100, CancellationToken.None );
@@ -231,6 +373,22 @@ namespace Silentor.CheatPanel
         {
             public static readonly VisualTreeAsset Content = UnityEngine.Resources.Load<VisualTreeAsset>( "SystemTab" );
             public static readonly Sprite TabButtonIcon = UnityEngine.Resources.Load<Sprite>( "BuildSettings.Editor" );
+        }
+
+        public enum ELogTypeSorted
+        {
+            Log,
+            Warn,
+            Assert,
+            Error,
+            Exception
+        }
+
+        public enum EStackTraceLogType
+        {
+            None,
+            Script,
+            Full,
         }
 
 #region IDataSourceViewHashProvider

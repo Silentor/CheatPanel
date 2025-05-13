@@ -22,8 +22,7 @@ namespace Silentor.CheatPanel
         public const string TabBtnUssClassName = "tab-view__tab-btn";
         public const string SelectedTabBtnUssClassName = "tab-view__tab-btn--selected";
 
-        public const String TabViewResultUssClassName     = ".tab-view__result";
-        public const String TabViewResultShowUssClassName = TabViewResultUssClassName + "--show";
+        public const String CheatPanelResultShowUssClassName = "result--visible";
 
 
         /// <summary>
@@ -47,12 +46,12 @@ namespace Silentor.CheatPanel
         {
             if( _resultLbl != null )
             {
-                _resultLbl.AddToClassList( TabViewResultShowUssClassName );
+                _resultLbl.AddToClassList( CheatPanelResultShowUssClassName );
                 _resultLbl.text = result;
                 _resultTransitionTask?.Pause();                                 //Yes, it's a recommended way to stop transition
                 _resultTransitionTask = _resultLbl.schedule.Execute( ( ) =>
                 {
-                    _resultLbl.RemoveFromClassList( TabViewResultShowUssClassName );
+                    _resultLbl.RemoveFromClassList( CheatPanelResultShowUssClassName );
 
                 } ).StartingIn( 5000 );
             }

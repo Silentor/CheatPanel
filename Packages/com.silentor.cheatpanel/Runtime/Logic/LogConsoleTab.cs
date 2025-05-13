@@ -205,7 +205,11 @@ namespace Silentor.CheatPanel
         private readonly ProfilerMarker _logItemSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(LogMessageReceivedThreaded)}" );
         private readonly ProfilerMarker _updateFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(UpdateList)}" );
         private readonly ProfilerMarker _rebuildFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(ProcessFilterChange)}" );
-        
+
+        protected override VisualElement GenerateContentUI( )
+        {
+            return GenerateCustomContent();
+        }
 
         protected override VisualElement GenerateCustomContent( )
         {

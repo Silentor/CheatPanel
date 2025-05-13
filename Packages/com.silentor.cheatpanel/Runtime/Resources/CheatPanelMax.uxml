@@ -11,7 +11,7 @@
                 <ui:Button text="-" name="MinimizeBtn" class="tab-view__tool-btn" />
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="Content" style="flex-grow: 1;" />
+        <ui:VisualElement name="Content" />
         <ui:Label text="cheat execute result" name="Result" class="tab-view__result" />
     </ui:VisualElement>
 </ui:UXML>

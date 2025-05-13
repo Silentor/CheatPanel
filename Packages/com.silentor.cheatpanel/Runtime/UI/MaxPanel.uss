@@ -34,6 +34,10 @@
     padding: 2px;
 }
 
+#CheatMaxPanel > #Content {
+    flex-grow: 1;
+}
+
 .tab-view__header{
     flex-direction: row;
 }
@@ -58,7 +62,7 @@
     border-color: var(--unity-colors-button-border-pressed);
 }
 
-.tab-view__result {
+#CheatMaxPanel > #Result {
     display: none;
     transition-property: opacity, display;
     transition-duration: 0.5s;
@@ -66,7 +70,33 @@
     white-space: normal;
 }
 
-.tab-view__result--show {
+#CheatMaxPanel > #Result.result--visible {
     display: flex;
     opacity: 1;
+}
+
+.unity-scroll-view__vertical-scroller {
+    width: 12px;
+}
+
+.unity-scroll-view__vertical-scroller > .unity-scroller__low-button{
+    width: 12px;
+}
+
+.unity-scroll-view__vertical-scroller > .unity-scroller__high-button{
+    width: 12px;
+}
+
+.unity-scroll-view__vertical-scroller > .unity-scroller__slider {
+    width: 12px;
+    min-width: 12px;
+}
+
+.unity-scroll-view__vertical-scroller > .unity-scroller__slider > .unity-base-slider__input {
+    width: 12px;
+    min-width: 12px;
+}
+
+.unity-scroll-view__vertical-scroller > .unity-scroller__slider > .unity-base-slider__input .unity-base-slider__dragger {
+    width: 6px;
 }
