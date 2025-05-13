@@ -1,6 +1,7 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/CheatPanelUSS.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CheatPanelUSS" />
+    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/CommonControls.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CommonControls" />
     <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/FpsHistogramControl/FpsHistogram.uss?fileID=7433441132597879392&amp;guid=52e65c23504f3be42933c5d8fa820020&amp;type=3#FpsHistogram" />
+    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/SystemTabStyles.uss?fileID=7433441132597879392&amp;guid=be5a0eeb774187a4683720874b9af56a&amp;type=3#SystemTabStyles" />
     <ui:VisualElement name="SystemTab" data-source-type="Silentor.CheatPanel.SystemTab, Silentor.CheatPanel" class="Tab" style="flex-grow: 1;">
         <ui:VisualElement name="DeviceInfo">
             <ui:VisualElement name="ToolBar" class="CheatLine">
@@ -77,7 +78,7 @@
                 </ui:EnumField>
             </ui:VisualElement>
             <ui:VisualElement class="CheatLine" style="flex-grow: 1; flex-wrap: wrap;">
-                <ui:EnumField label="Stack log" value="Script" type="Silentor.CheatPanel.SystemTab+EStackTraceLogType, Silentor.CheatPanel" name="LogStackTrace">
+                <ui:EnumField label="Log stack" value="Script" type="Silentor.CheatPanel.SystemTab+EStackTraceLogType, Silentor.CheatPanel" name="LogStackTrace">
                     <Bindings>
                         <ui:DataBinding property="value" data-source-path="LogStackTrace" binding-mode="TwoWay" />
                     </Bindings>
@@ -101,5 +102,14 @@
                 </ui:Toggle>
             </ui:VisualElement>
         </ui:VisualElement>
+        <ui:Foldout text="Danger zone" name="DangerZone" value="false" style="color: rgb(255, 0, 0); align-items: flex-start;">
+            <ui:VisualElement class="CheatLine" style="flex-grow: 1;">
+                <ui:Label text="Delete" />
+                <ui:Button text="PlayerPrefs" name="DeletePlayerPrefsBtn" class="CheatBtn" />
+            </ui:VisualElement>
+            <ui:VisualElement class="CheatLine" style="flex-grow: 1;">
+                <ui:Button text="Crash" name="CrashBtn" class="CheatBtn" />
+            </ui:VisualElement>
+        </ui:Foldout>
     </ui:VisualElement>
 </ui:UXML>

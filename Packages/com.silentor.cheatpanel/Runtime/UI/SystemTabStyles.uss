@@ -1,0 +1,7 @@
+#DangerZone > .unity-foldout__content {
+    margin-left: 30px;
+}
+
+#DangerZone > .unity-foldout__toggle > .unity-toggle__input:focus:enabled > .unity-label{
+    color: red;
+}

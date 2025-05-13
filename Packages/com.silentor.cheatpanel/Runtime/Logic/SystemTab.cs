@@ -7,6 +7,7 @@ using Silentor.CheatPanel.UI;
 using Silentor.CheatPanel.Utils;
 using Unity.Properties;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using Screen = UnityEngine.Device.Screen;
@@ -226,6 +227,17 @@ namespace Silentor.CheatPanel
             _devConsoleEnabledProperty = new SmartProperty<Boolean>( () => Debug.developerConsoleEnabled, v => Debug.developerConsoleEnabled = v );
             _devConsoleVisibleProperty = new SmartProperty<Boolean>( () => Debug.developerConsoleVisible, v => Debug.developerConsoleVisible = v );
             
+            //Danger zone section
+            var dangerZoneBox = instance.Q<VisualElement>( "DangerZone" );
+            var deletePlayerPrefsBtn = dangerZoneBox.Q<Button>( "DeletePlayerPrefsBtn" );
+            deletePlayerPrefsBtn.clicked += ( ) =>
+            {
+                PlayerPrefs.DeleteAll();
+                PlayerPrefs.Save();
+            };
+            var crashBtn = dangerZoneBox.Q<Button>( "CrashBtn" );
+            crashBtn.clicked += ( ) => UnityEngine.Diagnostics.Utils.ForceCrash( ForcedCrashCategory.FatalError );
+
             CheckUpdatesAsync( );
 
             return instance;
