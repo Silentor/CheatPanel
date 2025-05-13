@@ -53,17 +53,27 @@ namespace Silentor.CheatPanel
 
             if ( wasChanged )
             {
-                _tabs.RemoveAll( t => t.CheatsGroups.Count == 0 );
-                if ( _tabs.Count != oldTabsCount )                    
-                    UpdateTabsButtons();
+                _tabs.RemoveAll( t => t.GetType() == typeof(CheatTab) && t.CheatsGroups.Count == 0 );
                 if ( !_tabs.Contains( _selectedTab ) )
                 {
                     var newSelectedTabIndex = Math.Clamp( oldSelectedTabIndex, 0, _tabs.Count - 1 );
                     _selectedTab = _tabs[newSelectedTabIndex];
-                    if( _settings.IsMaximized )                        
-                        ShowPanel();
+                }
+
+                if( _settings.IsMaximized )
+                {
+                    if( oldTabsCount != _tabs.Count )
+                        UpdateTabsButtons();
+                    SelectTab( _contentContainer, _selectedTab );
                 }
             }
+        }
+
+        public void RemoveCheats<TCheats>() where TCheats : ICheats
+        {
+            var cheatObjects = _tabs.SelectMany( t => t.CheatsGroups ).SelectMany( g => g.Cheats ).Select( c => c.CheatObject ).OfType<TCheats>().Distinct( ).ToArray();
+            foreach ( var cheatObject in cheatObjects )                
+                RemoveCheats( cheatObject );
         }
 
         /// <summary>

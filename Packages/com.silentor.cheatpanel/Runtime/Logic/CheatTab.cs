@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
@@ -8,6 +9,7 @@ using UnityEngine.UIElements;
 
 namespace Silentor.CheatPanel
 {
+    [DebuggerDisplay("{Name}")]
     public class CheatTab : IDisposable
     {
         public readonly  string     Name;

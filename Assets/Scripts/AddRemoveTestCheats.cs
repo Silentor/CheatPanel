@@ -35,6 +35,11 @@ namespace Silentor.CheatPanel.DevProject
             _panel.RemoveCheats( _cheats2 );
         }
 
+        public void RemoveCheat2Class( )
+        {
+            _panel.RemoveCheats<Test2Cheats>( );
+        }
+
 
     }
 }
