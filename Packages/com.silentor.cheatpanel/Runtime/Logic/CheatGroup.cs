@@ -21,6 +21,23 @@ namespace Silentor.CheatPanel
             InvalidateUI( );
         }
 
+        public Boolean RemoveCheats( ICheats cheats )
+        {
+            var wasChanged = false;
+            for ( int i = 0; i < Cheats.Count; i++ )
+            {
+                if ( Cheats[ i ].CheatObject == cheats )
+                {
+                    Cheats.RemoveAt( i );
+                    InvalidateUI();
+                    wasChanged = true;
+                    i--;
+                }
+            }
+
+            return wasChanged;
+        }
+
         public VisualElement GetUI( )
         {
             return _cachedUI ??= GenerateUI( );

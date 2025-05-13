@@ -24,7 +24,8 @@ namespace Silentor.CheatPanel.DevProject
 
             await Awaitable.WaitForSecondsAsync( 1, destroyCancellationToken );
 
-            cheats.AddCheats( new LogMessagesCheats( this ) );
+            //cheats.AddCheats( new LogMessagesCheats( this ) );
+            cheats.AddCheats( new AddRemoveTestCheats( cheats ) );
 
             //await Awaitable.WaitForSecondsAsync( 3, destroyCancellationToken );
 
@@ -51,7 +52,7 @@ namespace Silentor.CheatPanel.DevProject
 
         private void Bench( )
         {
-            var cheats = new MetaGameCheats();
+            var cheats = new PropertyCheats();
 
             var speedprop      = cheats.GetType().GetProperty( "Speed" );
             var speed1         = (float)speedprop.GetValue( cheats );

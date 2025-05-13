@@ -114,6 +114,8 @@ namespace Silentor.CheatPanel
             }
         }
 
+        public override Int32 Order => int.MaxValue;
+
         public LogConsoleTab( ) : base ("Log")
         {
             _fullLog = new List<LogItem>( _capacity );

@@ -12,6 +12,7 @@ namespace Silentor.CheatPanel
     {
         public readonly  string     Name;
         public readonly  List<CheatGroup>    CheatsGroups     = new();
+        public virtual int Order => 0;
 
         public Boolean IsVisible { get; private set; }
 
@@ -41,12 +42,31 @@ namespace Silentor.CheatPanel
             {
                 group = new CheatGroup( cheat.GroupName );
                 CheatsGroups.Add( group );
-                InvalidateUI();
             }
 
             group.AddCheat( cheat );
+
+            InvalidateUI();
         }
 
+        public Boolean Remove( ICheats cheats )
+        {
+            var wasChanged = false;
+
+            for ( var i = 0; i < CheatsGroups.Count; i++ )
+            {
+                var cheatGroup = CheatsGroups[ i ];
+                wasChanged |= cheatGroup.RemoveCheats( cheats );
+            }
+
+            if ( wasChanged )
+            {
+                CheatsGroups.RemoveAll( cg => cg.Cheats.Count == 0 );
+                InvalidateUI();
+            }
+
+            return wasChanged;
+        }
 
         public Button GetTabButton(  )
         {
@@ -114,6 +134,16 @@ namespace Silentor.CheatPanel
             foreach ( var cheatsGroup in CheatsGroups )
             {
                 cheatsGroup.Dispose();
+            }
+        }
+
+        public class CheatTabOrderComparer : IComparer<CheatTab>
+        {
+            public static readonly CheatTabOrderComparer Instance = new CheatTabOrderComparer();
+
+            public int Compare(CheatTab x, CheatTab y)
+            {
+                return x.Order.CompareTo( y.Order );
             }
         }
     }

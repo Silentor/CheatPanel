@@ -155,6 +155,8 @@ namespace Silentor.CheatPanel
             set => _devConsoleVisibleProperty.Value = value;
         }
 
+        public override Int32 Order => int.MaxValue - 1;
+
         public SystemTab( FpsMeter fpsMeter, Settings settings, ILogger logger = null ) : base ( "System" )
         {
             _fpsMeter = fpsMeter;

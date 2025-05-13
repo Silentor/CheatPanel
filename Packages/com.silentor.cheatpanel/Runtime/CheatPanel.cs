@@ -24,17 +24,45 @@ namespace Silentor.CheatPanel
 
         public const String CheatPanelResultShowUssClassName = "result--visible";
 
-
         /// <summary>
         /// Add cheats to the cheat panel.
         /// </summary>
         /// <param name="cheats"></param>
-        public void AddCheats( ICheats cheats )
+        public void AddCheats( ICheats cheats, String name = null )
         {
-            AddCheatsInternal( cheats );
+            var oldTabsCount = _tabs.Count;
+            AddCheatsInternal( cheats, name );
             if( _settings.IsMaximized )
             {
-                ShowPanel();
+                if( oldTabsCount != _tabs.Count )
+                    UpdateTabsButtons();
+                SelectTab( _contentContainer, _selectedTab );
+            }
+        }
+
+        public void RemoveCheats( ICheats cheats )
+        {
+            var oldTabsCount = _tabs.Count;
+            var oldSelectedTabIndex = _tabs.IndexOf( _selectedTab );
+            var wasChanged = false;
+
+            foreach ( var cheatTab in _tabs )
+            {
+                wasChanged |= cheatTab.Remove( cheats );
+            }
+
+            if ( wasChanged )
+            {
+                _tabs.RemoveAll( t => t.CheatsGroups.Count == 0 );
+                if ( _tabs.Count != oldTabsCount )                    
+                    UpdateTabsButtons();
+                if ( !_tabs.Contains( _selectedTab ) )
+                {
+                    var newSelectedTabIndex = Math.Clamp( oldSelectedTabIndex, 0, _tabs.Count - 1 );
+                    _selectedTab = _tabs[newSelectedTabIndex];
+                    if( _settings.IsMaximized )                        
+                        ShowPanel();
+                }
             }
         }
 
@@ -233,6 +261,7 @@ namespace Silentor.CheatPanel
             contentContainer.Clear();
             var tabContent = selectedTab.GetTabContent();
             contentContainer.Add( tabContent );
+            _selectedTab = selectedTab;
         }
 
         private void TabBtnOnclicked( VisualElement contentContainer, CheatTab selectedTab )
@@ -240,13 +269,10 @@ namespace Silentor.CheatPanel
             SelectTab( contentContainer, selectedTab );
         }
 
-        private void AddCheatsInternal( ICheats cheats )
+        private void AddCheatsInternal( ICheats cheats, String name )
         {
-            var defaultTabName = cheats.GetType().Name;
-            if( defaultTabName.EndsWith( "Cheats", StringComparison.InvariantCultureIgnoreCase ) )
-                defaultTabName = defaultTabName[ ..^6 ];
+            var defaultTabName = name ?? GetDefaultTabName( cheats );
 
-            var oldTabsCount = _tabs.Count;
             var members = cheats.GetType().GetMembers( BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic );
             //Debug.Log($"Processing cheats from {cheats.GetType().Name}, members count: {members.Length}");
             foreach ( var member in members )
@@ -265,8 +291,13 @@ namespace Silentor.CheatPanel
                 }
             }
 
-            if( _tabs.Count != oldTabsCount )
-                UpdateTabsButtons();
+            static String GetDefaultTabName( ICheats cheats )
+            {
+                var typeName = cheats.GetType().Name;
+                if( typeName.EndsWith( "Cheats", StringComparison.InvariantCultureIgnoreCase ) )
+                    typeName = typeName[0..^6];
+                return typeName;
+            }
         }
 
         private CheatTab GetOrCreateTab( String tabName)
@@ -278,6 +309,7 @@ namespace Silentor.CheatPanel
             {
                 tab = new CheatTab( tabName );
                 _tabs.Add( tab );
+                _tabs.Sort( CheatTab.CheatTabOrderComparer.Instance );
             }
 
             return tab;
