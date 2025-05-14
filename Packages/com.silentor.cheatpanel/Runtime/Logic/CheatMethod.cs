@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Silentor.CheatPanel.Binders;
@@ -21,6 +22,7 @@ namespace Silentor.CheatPanel
 
         private VisualElement   _cheatContainer;
         private Button _cheatBtn;
+        private Button _cancelBtn;
         private          IReadOnlyList<CheatFieldBinderBase> _paramsWrappers;
         private          Object[]                            _params;
 
@@ -29,10 +31,12 @@ namespace Silentor.CheatPanel
 
         //Awaitable method support
         private Boolean _isAwaitable;
+        private Boolean _isCancellable;
         private MethodInfo _getAwaiterMethod;
         private PropertyInfo _isCompletedProperty;
         private MethodInfo _getResultMethod;
-        
+        private CancellationTokenSource _cts;
+        private int _cancellationTokenParamIndex;
 
 
         public CheatMethod( MethodInfo methodInfo, ICheats cheatObject, CheatPanel cheatPanel ) : base( methodInfo, cheatObject )
@@ -56,7 +60,7 @@ namespace Silentor.CheatPanel
 
             _isAnyParams = _methodInfo.GetParameters().Length != 0;
             _isResultPresent = _methodInfo.ReturnType != typeof( void );
-            _isAwaitable = IsAwaitable( _methodInfo );
+            (_isAwaitable, _isCancellable) = IsAwaitable( _methodInfo );
 
             if ( _isAnyParams )
             {
@@ -66,6 +70,12 @@ namespace Silentor.CheatPanel
             }
             else
                 _params = Array.Empty<Object>();
+
+            if ( _isCancellable )
+            {
+                _cancelBtn = GenerateCancelButton();
+                _cheatContainer.Add( _cancelBtn );  //Invisible by default
+            }
 
             _cheatBtn.AddToClassList( "CheatBtn" );
             _cheatContainer.AddToClassList( "CheatLine" );
@@ -77,7 +87,8 @@ namespace Silentor.CheatPanel
                     if ( _params == null )
                         _params = new Object[_paramsWrappers.Count];
                     for ( int i = 0; i < _params.Length; i++ )
-                        _params[ i ] = _paramsWrappers[ i ].GetBoxedFieldValue( );
+                        if( _paramsWrappers[i] != null )
+                            _params[ i ] = _paramsWrappers[ i ].GetBoxedFieldValue( );
                 }
 
                 if ( _isAwaitable )
@@ -99,6 +110,24 @@ namespace Silentor.CheatPanel
         {
             //No need
             throw new System.NotImplementedException();
+        }
+
+        private Button GenerateCancelButton( )
+        {
+            var cancelBtn = new Button( );
+            cancelBtn.text                  = String.Empty;
+            cancelBtn.style.backgroundImage = new StyleBackground( Resources.CancelIcon );
+            cancelBtn.style.display = DisplayStyle.None;
+            cancelBtn.AddToClassList( "CheatBtn" );
+            cancelBtn.clicked += ( ) =>
+            {
+                if ( _cts != null )
+                {
+                    _cts.Cancel( );
+                    //_cheatBtn.SetEnabled( true );
+                }
+            };
+            return cancelBtn;
         }
 
         protected override RefreshUITiming GetRefreshUITiming( )
@@ -179,8 +208,8 @@ namespace Silentor.CheatPanel
                 }
                 else
                 {
-                    //Unsupported type
-                    throw new InvalidOperationException( $"Unsupported cheat method parameter type: {par.ParameterType}" );
+                    //Unsupported type, use default value as parameter
+                    result.Add( new ConstantBinder( null ) );
                 }
             }
 
@@ -190,6 +219,12 @@ namespace Silentor.CheatPanel
         private async void ProcessAsyncCheatCall( Object[] paramz, CancellationToken cancel )
         {
             _cheatBtn.SetEnabled( false );
+            if ( _isCancellable )
+            {
+                _cts = new CancellationTokenSource();
+                paramz[ _cancellationTokenParamIndex ] = _cts.Token;
+                _cancelBtn.style.display = DisplayStyle.Flex;
+            }
 
             try
             {
@@ -228,11 +263,16 @@ namespace Silentor.CheatPanel
             }
             finally
             {
-                _cheatBtn.SetEnabled( true );                
+                _cheatBtn.SetEnabled( true );
+                if ( _isCancellable )
+                {
+                    _cts.Dispose();
+                    _cancelBtn.style.display = DisplayStyle.None;
+                }
             }
         }
 
-        private Boolean IsAwaitable( MethodInfo mi )
+        private (Boolean, Boolean) IsAwaitable( MethodInfo mi )
         {
             var returnType = mi.ReturnType;
             _getAwaiterMethod = returnType.GetMethod( "GetAwaiter" );
@@ -246,14 +286,23 @@ namespace Silentor.CheatPanel
                     _isCompletedProperty = isCompletedProperty;
                     _getResultMethod = getResultMethod;
                     _isResultPresent = getResultMethod.ReturnType != typeof( void );
-                    return true;
+                    
+                    var isCancellable = false;
+                    var paramz = mi.GetParameters( );
+                    if( paramz.Count( p => p.ParameterType == typeof(CancellationToken) ) == 1 )
+                    {
+                        _cancellationTokenParamIndex = Array.FindIndex( paramz, p => p.ParameterType == typeof(CancellationToken) );
+                        isCancellable = true;
+                    }
+
+                    return (true, isCancellable);
                 }
             }
 
-            return false;
+            return (false, false);
         }
 
-    private CheatFieldBinderBase PrepareWrapper<T>( BaseField<T> field, T value )
+        private CheatFieldBinderBase PrepareWrapper<T>( BaseField<T> field, T value )
         {
             var wrapper = new ParameterSimpleBinder<T>( field, value );
             return wrapper;
@@ -263,6 +312,11 @@ namespace Silentor.CheatPanel
         {
             var wrapper = new ParameterBinder<TField, TParam>( field, value, fieldToParam );
             return wrapper;
+        }
+
+        private static class Resources
+        {
+            public static readonly Sprite CancelIcon = UnityEngine.Resources.Load<Sprite>( "cancel" );
         }
     }
 }

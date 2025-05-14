@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -134,6 +135,13 @@ namespace Silentor.CheatPanel.DevProject
             await Task.Delay( 1000 );
             if ( throwException )
                 throw new OperationCanceledException( );
+        }
+        
+        [Cheat( "Asyncs" )]
+        public async Task<int> CancelFromUI( int x, int y, MethodCheats unsupportedParam, Guid unsupportedStruct, CancellationToken cancel )
+        {
+            await Task.Delay( 5000, cancel );
+            return x + y;
         }
 
 
