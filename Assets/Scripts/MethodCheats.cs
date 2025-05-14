@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.UIElements;
@@ -10,6 +11,7 @@ namespace Silentor.CheatPanel.DevProject
     {
         private int    _money       = 69;
 
+        /*
         public string MethodManyParams( BackgroundSizeType @enum, byte par1 = 66, Boolean par2 = true )
         {
             return $"called {nameof(MethodManyParams)} with {@enum}, {par1}, {par2}";
@@ -74,5 +76,80 @@ namespace Silentor.CheatPanel.DevProject
         public void DoWithAttrGr1( )
         {
         }
+
+*/
+        [Cheat("Asyncs")]
+        public async Task TaskNoResult( )
+        {
+            await Task.Delay( 1000 );
+        }
+        
+        [Cheat("Asyncs")]
+        public async Task<Int32> TaskResult( )
+        {
+            await Task.Delay( 1000 );
+            return 42;
+        }
+
+        [Cheat("Asyncs")]
+        public async ValueTask VTaskNoResult( )
+        {
+            await Task.Delay( 1000 );
+        }
+
+        [Cheat( "Asyncs" )]
+        public async ValueTask<Int32> VTaskResult( )
+        {
+            await Task.Delay( 1000 );
+            return 42;
+        }
+
+        [Cheat( "Asyncs" )]
+        public async Task<Int32> ATaskResultParams( int x, int y )
+        {
+            await Task.Delay( 1000 );
+            return x + y;
+        }
+
+        [Cheat( "Asyncs" )]
+        public async Task<Int32> TaskResultException( Boolean throwException = true )
+        {
+            await Task.Delay( 1000 );
+            if ( throwException )
+                throw new Exception( "Test exception" );
+            return 43;
+        }
+
+        [Cheat( "Asyncs" )]
+        public async Task TaskException( Boolean throwException = true )
+        {
+            await Task.Delay( 1000 );
+            if ( throwException )
+                throw new Exception( "Test exception" );
+        }
+
+        [Cheat( "Asyncs" )]
+        public async Task TaskCancellation( Boolean throwException = true )
+        {
+            await Task.Delay( 1000 );
+            if ( throwException )
+                throw new OperationCanceledException( );
+        }
+
+
+        // [Cheat("Asyncs")]
+        // public async Awaitable ATaskNoResult( )
+        // {
+        //     await Awaitable.WaitForSecondsAsync( 1 );
+        // } 
+        //
+        // [Cheat("Asyncs")]
+        // public async Awaitable<Int32> ATaskResult( )
+        // {
+        //     await Awaitable.WaitForSecondsAsync( 1 );
+        //     return 42;
+        // }
+        
+
     }
 }

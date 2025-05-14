@@ -37,10 +37,7 @@ namespace Silentor.CheatPanel
             }
             else if( cheatMember is MethodInfo cheatMethod )
             {
-                if( cheatMethod.GetParameters().Length == 0 )
-                    return new CheatMethod( cheatMethod, cheatObject, cheatPanel );
-                else
-                    return new CheatMethodParams( cheatMethod, cheatObject, cheatPanel );
+                return new CheatMethod( cheatMethod, cheatObject, cheatPanel );
             }
 
             return null;

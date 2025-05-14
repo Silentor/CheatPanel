@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Debug = UnityEngine.Debug;
@@ -18,6 +17,10 @@ namespace Silentor.CheatPanel.DevProject
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         async void Start()
         {
+            //StartCoroutine( CallAwaitable() );
+
+            
+
             //Debug.unityLogger.filterLogType
 
             var cheats = FindAnyObjectByType<CheatPanel>();
@@ -25,7 +28,7 @@ namespace Silentor.CheatPanel.DevProject
             await Awaitable.WaitForSecondsAsync( 1, destroyCancellationToken );
 
             //cheats.AddCheats( new LogMessagesCheats( this ) );
-            cheats.AddCheats( new AddRemoveTestCheats( cheats ) );
+            cheats.AddCheats( new MethodCheats( ) );
 
             //await Awaitable.WaitForSecondsAsync( 3, destroyCancellationToken );
 
@@ -40,6 +43,45 @@ namespace Silentor.CheatPanel.DevProject
 
             //StartCoroutine( LogCoroutine() );
         }
+
+        // IEnumerator CallAwaitable( )
+        // {
+        //     Debug.Log( "Start call awaitable" );
+        //
+        //     var mi         = this.GetType().GetMethod( nameof(TestAwaitable) );
+        //     var getAwaiter = mi.ReturnType.GetMethod( "GetAwaiter" );
+        //
+        //     if( getAwaiter != null )
+        //     {
+        //         var awaitable  = mi.Invoke( this, null );
+        //         var awaiter = getAwaiter.Invoke( awaitable, null );
+        //         var isCompletedProp = awaiter.GetType().GetProperty( "IsCompleted" );
+        //
+        //         while( !((Boolean)isCompletedProp.GetValue( awaiter )))
+        //         {
+        //             yield return null;
+        //         }
+        //
+        //         var resultMethod = awaiter.GetType().GetMethod( "GetResult" );
+        //         var isResultPresent = resultMethod.ReturnType != typeof(void);
+        //         if ( isResultPresent )
+        //         {
+        //             var result = resultMethod.Invoke( awaiter, null );
+        //             Debug.Log( result );
+        //         }
+        //         else
+        //         {
+        //             Debug.Log( "No result" );
+        //         }
+        //     }
+        // }
+
+        // public async UniTask<String> TestAwaitable( )
+        // {
+        //     //await   Task.Delay( 1000 );
+        //     await Awaitable.WaitForSecondsAsync( 1 );
+        //     return "Unitask result";
+        // }
 
         IEnumerator LogCoroutine( )
         {
