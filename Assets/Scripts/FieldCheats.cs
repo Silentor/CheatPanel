@@ -41,6 +41,7 @@ namespace Silentor.CheatPanel.DevProject
 
         [Cheat("Unity")] 
         private Color ColorCheat = Color.magenta;
+        [Cheat("Unity")] 
         private Color32 Color32Cheat = Color.green;
 
         [Cheat("Adv types")] public Guid GuidCheat = Guid.NewGuid( );

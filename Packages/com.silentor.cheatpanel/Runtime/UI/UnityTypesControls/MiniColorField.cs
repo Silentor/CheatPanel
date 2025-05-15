@@ -30,27 +30,35 @@ namespace Silentor.CheatPanel.UI
             var editors = this.Query<IntegerField>(  ).ToList();
             _rField = editors[0];
             _rField.RegisterValueChangedCallback( ( evt) => {
+                var compValue = evt.newValue.ClampToByte();
                 Color32 color32 = value;
-                color32.r   = evt.newValue.ClampToByte();
+                color32.r   = compValue;
                 value = color32;
+                _rField.SetValueWithoutNotify( compValue );
             } );
             _gField = editors[1];
             _gField.RegisterValueChangedCallback( ( evt) => {
+                var compValue = evt.newValue.ClampToByte();
                 Color32 color32 = value;
-                color32.g = evt.newValue.ClampToByte();
+                color32.g = compValue;
                 value     = color32;
+                _gField.SetValueWithoutNotify( compValue );
             } );
             _bField = editors[2];
             _bField.RegisterValueChangedCallback( ( evt) => {
+                var compValue = evt.newValue.ClampToByte();
                 Color32 color32 = value;
-                color32.b = evt.newValue.ClampToByte();
+                color32.b = compValue;
                 value     = color32;
+                _bField.SetValueWithoutNotify( compValue );
             } );
             _aField = editors[3];
             _aField.RegisterValueChangedCallback( ( evt) => {
+                var compValue = evt.newValue.ClampToByte();
                 Color32 color32 = value;
-                color32.a = evt.newValue.ClampToByte();
+                color32.a = compValue;
                 value     = color32;
+                _aField.SetValueWithoutNotify( compValue );
             } );
             _sample = this.Q<VisualElement>( className: sampleUssClassName );
         }

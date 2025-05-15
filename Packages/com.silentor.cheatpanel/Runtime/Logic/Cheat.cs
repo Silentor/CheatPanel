@@ -32,7 +32,7 @@ namespace Silentor.CheatPanel
                 }
                 else
                 {
-                    return new CheatPropertySlider( cheatProperty, rangeAttr, cheatObject );
+                    return new CheatSlider( cheatProperty, rangeAttr, cheatObject );
                 }
             }
             else if ( cheatMember is FieldInfo cheatField )
@@ -42,10 +42,10 @@ namespace Silentor.CheatPanel
                 {
                     return new CheatTextBox( cheatField, cheatObject );
                 }
-                // else
-                // {
-                //     return new CheatPropertySlider( cheatField, rangeAttr, cheatObject );
-                // }
+                else
+                {
+                    return new CheatSlider( cheatField, rangeAttr, cheatObject );
+                }
             }
             else if( cheatMember is MethodInfo cheatMethod )
             {
@@ -98,7 +98,7 @@ namespace Silentor.CheatPanel
                         var propType = propertyInfo.PropertyType;
                         if( propType.IsPrimitive || propType == typeof( string ) || propType == typeof(Vector2) || propType == typeof(Vector3) || propType == typeof(Vector4)
                             || propType == typeof(Vector3Int) || propType == typeof(Vector2Int) || propType == typeof(Rect) || propType == typeof(Bounds)
-                            || propType == typeof(RectInt) || propType == typeof(BoundsInt) || propType.IsEnum || propType == typeof(Color))
+                            || propType == typeof(RectInt) || propType == typeof(BoundsInt) || propType.IsEnum || propType == typeof(Color) || propType == typeof(Color32))
                         {
                             return true;
                         }

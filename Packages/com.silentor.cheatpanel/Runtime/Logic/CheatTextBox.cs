@@ -42,162 +42,168 @@ namespace Silentor.CheatPanel
 
         protected override VisualElement GenerateUI( )
         {
-            var isProperty = _cheatProperty != null;
             var cheatName = Name;
-            var cheatType = isProperty ? _cheatProperty.PropertyType : _cheatField.FieldType;
+            var cheatType = _cheatProperty != null ? _cheatProperty.PropertyType : _cheatField.FieldType;
 
             if( cheatType == typeof(Single) )
             {
                 var  control = new FloatField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if( cheatType == typeof(Double) )
             {
                 var control = new DoubleField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty ,control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if( cheatType == typeof(Int32) )
             {
                 var control = new IntegerField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if( cheatType == typeof(Int64) )
             {
                 var  control = new LongField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if( cheatType == typeof(UInt32) )
             {
                 var  control = new UnsignedIntegerField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if( cheatType == typeof(UInt64) )
             {
                 var  control = new UnsignedLongField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if( cheatType == typeof(Byte) )
             {
                 var  control = new IntegerField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetBinder( isProperty, control, i => i.ClampToByte(), b => b );
+                _cheatControlBinder = GetBinder( control, i => i.ClampToByte(), b => b );
                 return control;
             }
             else if( cheatType == typeof(SByte) )
             {
                 var  control = new IntegerField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetBinder( isProperty, control, i => i.ClampToSByte(), b => b );
+                _cheatControlBinder = GetBinder( control, i => i.ClampToSByte(), b => b );
                 return control;
             }
             else if( cheatType == typeof(UInt16) )
             {
                 var  control = new IntegerField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetBinder( isProperty, control, i => i.ClampToUInt16(), b => b );
+                _cheatControlBinder = GetBinder( control, i => i.ClampToUInt16(), b => b );
                 return control;
             }
             else if( cheatType == typeof(Int16) )
             {
                 var  control = new IntegerField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetBinder( isProperty, control, i => i.ClampToInt16(), b => b );
+                _cheatControlBinder = GetBinder( control, i => i.ClampToInt16(), b => b );
                 return control;
             }
             else if( cheatType == typeof(Boolean) )
             {
                 var  control = new Toggle( cheatName );
                 control.AddToClassList( "CheatLine" );        //Special case styling for toggle
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if( cheatType == typeof(String) )
             {
                 var  control = new TextField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if ( cheatType == typeof(Vector3) )
             {
                 var  control = new Vector3Field( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if ( cheatType == typeof(Vector2) )
             {
                 var  control = new Vector2Field( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if ( cheatType == typeof(Vector4) )
             {
                 var  control = new Vector4Field( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control);
+                _cheatControlBinder = GetSimpleBinder( control);
                 return control;
             }
             else if ( cheatType == typeof(Vector3Int) )
             {
                 var  control = new Vector3IntField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if ( cheatType == typeof(Vector2Int) )
             {
                 var  control = new Vector2IntField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if ( cheatType == typeof(Rect) )
             {
                 var  control = new RectField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if ( cheatType == typeof(Bounds) )
             {
                 var  control = new BoundsField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if ( cheatType == typeof(RectInt) )
             {
                 var  control = new RectIntField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if ( cheatType == typeof(BoundsInt) )
             {
                 var  control = new BoundsIntField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
                 return control;
             }
             else if ( cheatType == typeof(Color) )
             {
                 var  control = new MiniColorField( cheatName );
                 StyleField( control );
-                _cheatControlBinder = GetSimpleBinder( isProperty, control );
+                _cheatControlBinder = GetSimpleBinder( control );
+                return control;
+            }
+            else if ( cheatType == typeof( Color32 ) )
+            {
+                var  control = new MiniColorField( cheatName );
+                StyleField( control );
+                _cheatControlBinder = GetBinder( control, c => (Color32)c, c32 => (Color)c32 );
                 return control;
             }
             else if ( cheatType.IsEnum )
@@ -205,7 +211,7 @@ namespace Silentor.CheatPanel
                 var value = cheatType.GetEnumValues().GetValue( 0 ); //We need this boxing to init field with values
                 var  control = new EnumField( cheatName, (Enum)value );
                 StyleField( control );
-                _cheatControlBinder = isProperty 
+                _cheatControlBinder = _cheatProperty != null 
                         ? new PropertyEnumBinder( control, _cheatProperty, _cheatObject )
                         : new FieldEnumBinder( control, _cheatField, _cheatObject );
                 return control;
@@ -225,17 +231,17 @@ namespace Silentor.CheatPanel
             return _refreshTiming;
         }
 
-        private CheatControlBinderBase GetSimpleBinder<TCheat>( Boolean isProperty, BaseField<TCheat> control )
+        private CheatControlBinderBase GetSimpleBinder<TCheat>( BaseField<TCheat> control )
         {
-            if( isProperty )
+            if( _cheatProperty != null )
                 return new PropertySimpleBinder<TCheat>( control, _cheatProperty, _cheatObject );
             else
                 return new FieldSimpleBinder<TCheat>( control, _cheatField, _cheatObject );
         }
 
-        private CheatControlBinderBase GetBinder<TCheat, TControl>( Boolean isProperty, BaseField<TControl> control, Func<TControl, TCheat> controlToCheat, Func<TCheat, TControl> cheatToControl )
+        private CheatControlBinderBase GetBinder<TCheat, TControl>( BaseField<TControl> control, Func<TControl, TCheat> controlToCheat, Func<TCheat, TControl> cheatToControl )
         {
-            if( isProperty )
+            if( _cheatProperty != null )
                 return new PropertyBinder<TControl, TCheat>( control, _cheatProperty, _cheatObject, controlToCheat, cheatToControl );
             else
                 return new FieldBinder<TControl, TCheat>( control, _cheatField, _cheatObject, controlToCheat, cheatToControl );
