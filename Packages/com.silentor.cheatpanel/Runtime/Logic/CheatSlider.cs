@@ -136,14 +136,14 @@ namespace Silentor.CheatPanel
         private Slider GetFloatSlider(  )
         {
             var slider = new Slider( Name, _min, _max );
-            //slider.showInputField = true;
+            slider.showInputField = true;
             return slider;
         }
 
         private SliderInt GetIntSlider(  )
         {
             var slider = new SliderInt( Name, (int)_min, (int)_max );
-            //slider.showInputField = true;
+            slider.showInputField = true;
             return slider;
         }
 

@@ -86,14 +86,9 @@
     border-color: var(--unity-colors-button-border-disabled);
 }
 
-.unity-label{
+.unity-label {
     margin: 0 1px;
     padding: 1px;
-}
-
-.unity-base-field-disabled {
-    margin: 1px;
-    padding: 0 1px;
 }
 
 .unity-base-field__label {
@@ -111,17 +106,21 @@
     min-width: 20px;
 }
 
-.unity-base-slider__dragger-disabled {
+.CheatLine.unity-base-slider--horizontal .unity-base-slider__dragger {
     max-height: 16px;
-    max-width: 12px;
-    min-width: 12px;
-    min-height: 16px;
     margin-top: -8px;
-    height: 16px;
 }
 
-.unity-base-slider__input {
+.unity-base-slider--horizontal .unity-base-slider__text-field {
+    flex-shrink: 0;
+    width: auto;
+    min-width: auto;
+    max-width: none;
+}
+
+.unity-base-slider--horizontal .unity-base-slider__drag-container {
     min-width: 70px;
+    flex-shrink: 0;
 }
 
 .unity-base-slider--horizontal {

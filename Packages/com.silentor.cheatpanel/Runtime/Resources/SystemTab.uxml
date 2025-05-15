@@ -1,7 +1,7 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/CommonControls.uss?fileID=7433441132597879392&amp;guid=da837b047dc25644ab18d95ddba56798&amp;type=3#CommonControls" />
-    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/FpsHistogramControl/FpsHistogram.uss?fileID=7433441132597879392&amp;guid=52e65c23504f3be42933c5d8fa820020&amp;type=3#FpsHistogram" />
-    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/SystemTabStyles.uss?fileID=7433441132597879392&amp;guid=be5a0eeb774187a4683720874b9af56a&amp;type=3#SystemTabStyles" />
+    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/FpsHistogramControl/FpsHistogram.uss?fileID=7433441132597879392&amp;guid=52e65c23504f3be42933c5d8fa820020&amp;type=3" />
+    <Style src="project://database/Packages/com.silentor.cheatpanel/Runtime/UI/SystemTabStyles.uss?fileID=7433441132597879392&amp;guid=be5a0eeb774187a4683720874b9af56a&amp;type=3" />
     <ui:VisualElement name="SystemTab" data-source-type="Silentor.CheatPanel.SystemTab, Silentor.CheatPanel" class="Tab" style="flex-grow: 1;">
         <ui:VisualElement name="DeviceInfo">
             <ui:VisualElement name="ToolBar" class="CheatLine">
