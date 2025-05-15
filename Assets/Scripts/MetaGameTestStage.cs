@@ -17,18 +17,13 @@ namespace Silentor.CheatPanel.DevProject
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         async void Start()
         {
-            //StartCoroutine( CallAwaitable() );
-
-            
-
-            //Debug.unityLogger.filterLogType
-
             var cheats = FindAnyObjectByType<CheatPanel>();
 
-            await Awaitable.WaitForSecondsAsync( 1, destroyCancellationToken );
+            //await Awaitable.WaitForSecondsAsync( 1, destroyCancellationToken );
 
             //cheats.AddCheats( new LogMessagesCheats( this ) );
-            cheats.AddCheats( new MethodCheats( ) );
+            //cheats.AddCheats( new MethodCheats( ) );
+            cheats.AddCheats( new FieldCheats( ) );
 
             //await Awaitable.WaitForSecondsAsync( 3, destroyCancellationToken );
 

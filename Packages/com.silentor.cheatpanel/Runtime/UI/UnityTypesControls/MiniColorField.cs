@@ -31,25 +31,25 @@ namespace Silentor.CheatPanel.UI
             _rField = editors[0];
             _rField.RegisterValueChangedCallback( ( evt) => {
                 Color32 color32 = value;
-                color32.r   = evt.newValue.ClampToUInt8();
+                color32.r   = evt.newValue.ClampToByte();
                 value = color32;
             } );
             _gField = editors[1];
             _gField.RegisterValueChangedCallback( ( evt) => {
                 Color32 color32 = value;
-                color32.g = evt.newValue.ClampToUInt8();
+                color32.g = evt.newValue.ClampToByte();
                 value     = color32;
             } );
             _bField = editors[2];
             _bField.RegisterValueChangedCallback( ( evt) => {
                 Color32 color32 = value;
-                color32.b = evt.newValue.ClampToUInt8();
+                color32.b = evt.newValue.ClampToByte();
                 value     = color32;
             } );
             _aField = editors[3];
             _aField.RegisterValueChangedCallback( ( evt) => {
                 Color32 color32 = value;
-                color32.a = evt.newValue.ClampToUInt8();
+                color32.a = evt.newValue.ClampToByte();
                 value     = color32;
             } );
             _sample = this.Q<VisualElement>( className: sampleUssClassName );

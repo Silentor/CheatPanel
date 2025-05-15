@@ -28,12 +28,24 @@ namespace Silentor.CheatPanel
                 var rangeAttr = cheatProperty.GetCustomAttribute<RangeAttribute>();
                 if( rangeAttr == null )
                 {
-                    return new CheatPropertyField( cheatProperty, cheatObject );
+                    return new CheatTextBox( cheatProperty, cheatObject );
                 }
                 else
                 {
                     return new CheatPropertySlider( cheatProperty, rangeAttr, cheatObject );
                 }
+            }
+            else if ( cheatMember is FieldInfo cheatField )
+            {
+                var rangeAttr = cheatField.GetCustomAttribute<RangeAttribute>();
+                if( rangeAttr == null )
+                {
+                    return new CheatTextBox( cheatField, cheatObject );
+                }
+                // else
+                // {
+                //     return new CheatPropertySlider( cheatField, rangeAttr, cheatObject );
+                // }
             }
             else if( cheatMember is MethodInfo cheatMethod )
             {
@@ -91,6 +103,10 @@ namespace Silentor.CheatPanel
                             return true;
                         }
                     }
+                }
+                else if ( memberInfo is FieldInfo fieldInfo )
+                {
+                    return true;
                 }
             }
 

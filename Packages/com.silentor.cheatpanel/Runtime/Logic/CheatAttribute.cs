@@ -6,7 +6,7 @@ namespace Silentor.CheatPanel
 {
     [Preserve]
     [RequireAttributeUsages]
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field )]
     public class CheatAttribute : Attribute
     {
         public String CheatName;

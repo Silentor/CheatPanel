@@ -98,18 +98,18 @@ namespace Silentor.CheatPanel.DevProject
             set => _name = value;
         }
 
-        public Vector3 Vec3Cheat { get; set; }
-        public Vector2 Vec2Cheat { get; set; }
-        public Vector4 Vec4Cheat { get; set; }
-        public Rect RectCheat { get; set; }
-        public Bounds BoundsCheat { get; set; }
-        public Vector2Int Vec2ICheat { get; set; }
-        public Vector3Int Vec3ICheat { get; set; }
-        public RectInt   RectIntCheat   { get; set; }
-        public BoundsInt BoundsIntCheat { get; set; }
-        public EasingMode EnumCheat { get; set; }
+        [Cheat("Advanced")] public Vector3 Vec3Cheat { get; set; }
+        [Cheat("Advanced")] public Vector2 Vec2Cheat { get; set; }
+        [Cheat("Advanced")] public Vector4 Vec4Cheat { get; set; }
+        [Cheat("Advanced")] public Rect RectCheat { get; set; }
+        [Cheat("Advanced")] public Bounds BoundsCheat { get; set; }
+        [Cheat("Advanced")] public Vector2Int Vec2ICheat { get; set; }
+        [Cheat("Advanced")] public Vector3Int Vec3ICheat { get; set; }
+        [Cheat("Advanced")] public RectInt   RectIntCheat   { get; set; }
+        [Cheat("Advanced")] public BoundsInt BoundsIntCheat { get; set; }
+        [Cheat("Advanced")] public EasingMode EnumCheat { get; set; }
 
-        [Cheat]
-        private Color ColorCheat { get; set; } = Color.magenta;
+        [Cheat("Advanced")] private Color ColorCheat { get; set; } = Color.magenta;
     }
+
 }

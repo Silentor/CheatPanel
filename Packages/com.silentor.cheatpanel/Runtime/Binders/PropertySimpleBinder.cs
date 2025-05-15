@@ -9,7 +9,7 @@ namespace Silentor.CheatPanel.Binders
     /// Binder cheat property <-> UI control. Property type is equal to field type, no conversion needed
     /// </summary>
     /// <typeparam name="TField"></typeparam>
-    public class PropertySimpleBinder<TField> : CheatFieldBinderBase
+    public class PropertySimpleBinder<TField> : CheatControlBinderBase
     {
         private readonly BaseField<TField> _field;
         private readonly PropertyInfo      _property;
@@ -39,17 +39,17 @@ namespace Silentor.CheatPanel.Binders
             _setter( evt.newValue );
         }
 
-        public override VisualElement GetField( )
+        public override VisualElement GetControl( )
         {
             return _field;
         }
 
-        public override Object GetBoxedFieldValue( )
+        public override Object GetBoxedControlValue( )
         {
             return _field.value;
         }
 
-        public override void RefreshFieldUI( )
+        public override void RefreshControl( )
         {
             if( _getter == null )
                 return;

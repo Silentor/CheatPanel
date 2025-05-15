@@ -29,7 +29,7 @@ namespace Silentor.CheatPanel
         private readonly ICheats               _cheatObject;
         private readonly Single                _min;
         private readonly Single                _max;
-        private          CheatFieldBinderBase _cheatFieldBinder;
+        private          CheatControlBinderBase _cheatControlBinder;
 
 
         protected override VisualElement GenerateUI( )
@@ -48,61 +48,61 @@ namespace Silentor.CheatPanel
             if( propType == typeof(Single) )
             {
                 var  field = GetFloatSlider( );
-                _cheatFieldBinder = new PropertySimpleBinder<Single>( field, _cheatProperty, _cheatObject );
+                _cheatControlBinder = new PropertySimpleBinder<Single>( field, _cheatProperty, _cheatObject );
                 return field;
             }
             else if( propType == typeof(Double) )
             {
                 var  field = GetFloatSlider();
-                _cheatFieldBinder = new PropertyBinder<Single, Double>( field, _cheatProperty, _cheatObject, f => f, d => d.ClampToFloat() );
+                _cheatControlBinder = new PropertyBinder<Single, Double>( field, _cheatProperty, _cheatObject, f => f, d => d.ClampToFloat() );
                 return field;
             }
             else if( propType == typeof(Int32) )
             {
                 var  field = GetIntSlider(  );
-                _cheatFieldBinder = new PropertySimpleBinder<Int32>( field, _cheatProperty, _cheatObject );
+                _cheatControlBinder = new PropertySimpleBinder<Int32>( field, _cheatProperty, _cheatObject );
                 return field;
             }
             else if( propType == typeof(Int64) )
             {
                 var  field = GetIntSlider(  );
-                _cheatFieldBinder = new PropertyBinder<Int32, Int64>( field, _cheatProperty, _cheatObject, f => f, p => p.ClampToInt32() );
+                _cheatControlBinder = new PropertyBinder<Int32, Int64>( field, _cheatProperty, _cheatObject, f => f, p => p.ClampToInt32() );
                 return field;
             }
             else if( propType == typeof(UInt32) )
             {
                 var  field = GetIntSlider(  );
-                _cheatFieldBinder = new PropertyBinder<Int32, UInt32>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt32(), p => p.ClampToInt32() );
+                _cheatControlBinder = new PropertyBinder<Int32, UInt32>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt32(), p => p.ClampToInt32() );
                 return field;
             }
             else if( propType == typeof(UInt64) )
             {
                 var  field = GetIntSlider(  );
-                _cheatFieldBinder = new PropertyBinder<Int32, UInt64>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt64(), p => p.ClampToInt32() );
+                _cheatControlBinder = new PropertyBinder<Int32, UInt64>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt64(), p => p.ClampToInt32() );
                 return field;
             }
             else if( propType == typeof(Byte) )
             {
                 var  field = GetIntSlider(  );
-                _cheatFieldBinder = new PropertyBinder<Int32, Byte>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt8(), p => p );
+                _cheatControlBinder = new PropertyBinder<Int32, Byte>( field, _cheatProperty, _cheatObject, f => f.ClampToByte(), p => p );
                 return field;
             }
             else if( propType == typeof(SByte) )
             {
                 var  field = GetIntSlider(  );
-                _cheatFieldBinder = new PropertyBinder<Int32, SByte>( field, _cheatProperty, _cheatObject, f => f.ClampToInt8(), p => p );
+                _cheatControlBinder = new PropertyBinder<Int32, SByte>( field, _cheatProperty, _cheatObject, f => f.ClampToSByte(), p => p );
                 return field;
             }
             else if( propType == typeof(UInt16) )
             {
                 var  field = GetIntSlider(  );
-                _cheatFieldBinder = new PropertyBinder<Int32, UInt16>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt16(), p => p );
+                _cheatControlBinder = new PropertyBinder<Int32, UInt16>( field, _cheatProperty, _cheatObject, f => f.ClampToUInt16(), p => p );
                 return field;
             }
             else if( propType == typeof(Int16) )
             {
                 var  field = GetIntSlider(  );
-                _cheatFieldBinder = new PropertyBinder<Int32, Int16>( field, _cheatProperty, _cheatObject, f => f.ClampToInt16(), p => p );
+                _cheatControlBinder = new PropertyBinder<Int32, Int16>( field, _cheatProperty, _cheatObject, f => f.ClampToInt16(), p => p );
                 return field;
             }
 
@@ -111,8 +111,8 @@ namespace Silentor.CheatPanel
 
         protected override void RefreshUI( )
         {
-            if( _cheatFieldBinder != null )
-                _cheatFieldBinder.RefreshFieldUI();
+            if( _cheatControlBinder != null )
+                _cheatControlBinder.RefreshControl();
         }
 
         protected override RefreshUITiming GetRefreshUITiming( )

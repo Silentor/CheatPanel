@@ -8,7 +8,7 @@ namespace Silentor.CheatPanel.Binders
     /// </summary>
     /// <typeparam name="TField"></typeparam>
     /// <typeparam name="TParameter"></typeparam>
-    public class ParameterBinder<TField, TParameter> : CheatFieldBinderBase
+    public class ParameterBinder<TField, TParameter> : CheatControlBinderBase
     {
         private readonly BaseField<TField>        _field;
         private readonly Func<TField, TParameter> _fieldToParam;
@@ -20,17 +20,17 @@ namespace Silentor.CheatPanel.Binders
             _field.SetValueWithoutNotify( defaultValue );
         }
 
-        public override VisualElement GetField( )
+        public override VisualElement GetControl( )
         {
             return _field;
         }
 
-        public override Object GetBoxedFieldValue( )
+        public override Object GetBoxedControlValue( )
         {
             return _fieldToParam ( _field.value );
         }
 
-        public override void RefreshFieldUI( )
+        public override void RefreshControl( )
         {
             //Not applicable
             throw new NotImplementedException();

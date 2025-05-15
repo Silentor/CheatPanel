@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 
 namespace Silentor.CheatPanel.Binders
 {
-    public class ConstantBinder : CheatFieldBinderBase
+    public class ConstantBinder : CheatControlBinderBase
     {
         private readonly Object _value;
         private readonly VisualElement _noneField;
@@ -15,17 +15,17 @@ namespace Silentor.CheatPanel.Binders
             _noneField.style.display = DisplayStyle.None;
         }
 
-        public override VisualElement GetField( )
+        public override VisualElement GetControl( )
         {
             return _noneField;
         }
 
-        public override Object GetBoxedFieldValue( )
+        public override Object GetBoxedControlValue( )
         {
             return _value;
         }
 
-        public override void RefreshFieldUI( )
+        public override void RefreshControl( )
         {
             throw new NotImplementedException();
         }

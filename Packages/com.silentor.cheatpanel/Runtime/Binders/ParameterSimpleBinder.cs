@@ -6,7 +6,7 @@ namespace Silentor.CheatPanel.Binders
     /// <summary>
     /// Binder for some value and UI control. Used for cheat method parameters
     /// </summary>
-    public class ParameterSimpleBinder<T> : CheatFieldBinderBase
+    public class ParameterSimpleBinder<T> : CheatControlBinderBase
     {
         private readonly BaseField<T> _field;
 
@@ -21,17 +21,17 @@ namespace Silentor.CheatPanel.Binders
             _field.SetValueWithoutNotify( defaultValue );
         }
 
-        public override VisualElement GetField( )
+        public override VisualElement GetControl( )
         {
             return _field;
         }
 
-        public override Object GetBoxedFieldValue( )
+        public override Object GetBoxedControlValue( )
         {
             return _field.value;
         }
 
-        public override void RefreshFieldUI( )
+        public override void RefreshControl( )
         {
             //Not applicable
             throw new NotImplementedException();

@@ -23,7 +23,7 @@ namespace Silentor.CheatPanel
         private VisualElement   _cheatContainer;
         private Button _cheatBtn;
         private Button _cancelBtn;
-        private          IReadOnlyList<CheatFieldBinderBase> _paramsWrappers;
+        private          IReadOnlyList<CheatControlBinderBase> _paramsWrappers;
         private          Object[]                            _params;
 
         private Boolean _isAnyParams;
@@ -66,7 +66,7 @@ namespace Silentor.CheatPanel
             {
                 _paramsWrappers = GetParamWrappers( );
                 foreach ( var w in _paramsWrappers )
-                    _cheatContainer.Add( w.GetField() );
+                    _cheatContainer.Add( w.GetControl() );
             }
             else
                 _params = Array.Empty<Object>();
@@ -88,7 +88,7 @@ namespace Silentor.CheatPanel
                         _params = new Object[_paramsWrappers.Count];
                     for ( int i = 0; i < _params.Length; i++ )
                         if( _paramsWrappers[i] != null )
-                            _params[ i ] = _paramsWrappers[ i ].GetBoxedFieldValue( );
+                            _params[ i ] = _paramsWrappers[ i ].GetBoxedControlValue( );
                 }
 
                 if ( _isAwaitable )
@@ -135,9 +135,9 @@ namespace Silentor.CheatPanel
             return RefreshUITiming.Never;
         }
 
-        private IReadOnlyList<CheatFieldBinderBase> GetParamWrappers( )
+        private IReadOnlyList<CheatControlBinderBase> GetParamWrappers( )
         {
-            var result = new List<CheatFieldBinderBase>();
+            var result = new List<CheatControlBinderBase>();
             foreach ( var par in _methodInfo.GetParameters() )
             {
                 if ( par.ParameterType == typeof(int) )
@@ -163,12 +163,12 @@ namespace Silentor.CheatPanel
                 else if ( par.ParameterType == typeof(byte) )
                 {
                     var field = new IntegerField( null );
-                    result.Add( PrepareWrapper( field, par.HasDefaultValue ? (byte)par.DefaultValue : 0, i => i.ClampToUInt8() ) );
+                    result.Add( PrepareWrapper( field, par.HasDefaultValue ? (byte)par.DefaultValue : 0, i => i.ClampToByte() ) );
                 }
                 else if ( par.ParameterType == typeof(sbyte) )
                 {
                     var field = new IntegerField( null );
-                    result.Add( PrepareWrapper( field, par.HasDefaultValue ? (sbyte)par.DefaultValue : 0, i => i.ClampToInt8() ) );
+                    result.Add( PrepareWrapper( field, par.HasDefaultValue ? (sbyte)par.DefaultValue : 0, i => i.ClampToSByte() ) );
                 }
                 else if ( par.ParameterType == typeof(ushort) )
                 {
@@ -302,13 +302,13 @@ namespace Silentor.CheatPanel
             return (false, false);
         }
 
-        private CheatFieldBinderBase PrepareWrapper<T>( BaseField<T> field, T value )
+        private CheatControlBinderBase PrepareWrapper<T>( BaseField<T> field, T value )
         {
             var wrapper = new ParameterSimpleBinder<T>( field, value );
             return wrapper;
         }
 
-        private CheatFieldBinderBase PrepareWrapper<TField, TParam>( BaseField<TField> field, TField value, Func<TField, TParam> fieldToParam )
+        private CheatControlBinderBase PrepareWrapper<TField, TParam>( BaseField<TField> field, TField value, Func<TField, TParam> fieldToParam )
         {
             var wrapper = new ParameterBinder<TField, TParam>( field, value, fieldToParam );
             return wrapper;

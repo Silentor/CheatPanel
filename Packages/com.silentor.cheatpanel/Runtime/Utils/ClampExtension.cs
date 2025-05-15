@@ -5,12 +5,12 @@ namespace Silentor.CheatPanel.Utils
 {
     public static class ClampExtension
     {
-        public static Byte ClampToUInt8( this int value )
+        public static Byte ClampToByte( this int value )
         {
             return (Byte)Math.Clamp( value, Byte.MinValue, Byte.MaxValue );
         }
 
-        public static SByte ClampToInt8( this int value )
+        public static SByte ClampToSByte( this int value )
         {
             return (SByte)Math.Clamp( value, SByte.MinValue, SByte.MaxValue );
         }

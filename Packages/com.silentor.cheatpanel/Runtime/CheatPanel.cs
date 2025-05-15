@@ -283,8 +283,8 @@ namespace Silentor.CheatPanel
         {
             var defaultTabName = name ?? GetDefaultTabName( cheats );
 
-            var members = cheats.GetType().GetMembers( BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic );
-            //Debug.Log($"Processing cheats from {cheats.GetType().Name}, members count: {members.Length}");
+            var members = cheats.GetType().GetMembers( BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic ).ToList();
+            members = CheckAccessibility( members );
             foreach ( var member in members )
             {
                 //Debug.Log(member.Name);
@@ -308,6 +308,60 @@ namespace Silentor.CheatPanel
                     typeName = typeName[0..^6];
                 return typeName;
             }
+        }
+
+        private List<MemberInfo> CheckAccessibility( List<MemberInfo> members )
+        {
+            var allowPrivate = false;
+            var allowFromBaseType = false;
+
+            for ( int i = 0; i < members.Count; i++ )
+            {
+                var member  = members[i];
+
+                //Access cheats from base type of ICheats need special permission
+                if( !allowFromBaseType && !(typeof(ICheats).IsAssignableFrom(member.DeclaringType) ))
+                {
+                    members.RemoveAt( i-- );
+                    continue;
+                }
+
+                var isAbstract = false;
+                var isPublic = false;
+                var markedAsCheat = member.IsDefined( typeof(CheatAttribute), true );
+
+                if ( member is MethodInfo method )
+                {
+                    isPublic = method.IsPublic;
+                    isAbstract = method.IsAbstract;
+                }
+                else if ( member is PropertyInfo property )
+                {
+                    isPublic = (property.CanRead && property.GetMethod.IsPublic) || (property.CanWrite && property.SetMethod.IsPublic);
+                    isAbstract = (property.CanRead && property.GetMethod.IsAbstract) || (property.CanWrite && property.SetMethod.IsAbstract);
+                }
+                else if ( member is FieldInfo field )
+                {
+                    isPublic = field.IsPublic;
+                }
+
+                if( isAbstract)     //Definitely no
+                {
+                    members.RemoveAt( i-- );
+                    continue;
+                }
+
+                if ( !isPublic )
+                {
+                    if( !allowPrivate && !markedAsCheat )
+                    {
+                        members.RemoveAt( i-- );
+                        continue;
+                    }
+                }
+            }
+
+            return members;
         }
 
         private CheatTab GetOrCreateTab( String tabName)

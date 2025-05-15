@@ -6,24 +6,21 @@ using UnityEngine.UIElements;
 namespace Silentor.CheatPanel.Binders
 {
     /// <summary>
-    /// Binder enum cheat property <-> UI control. Works with boxing.
+    /// Binder enum cheat field <-> UI control. Works with boxing.
     /// </summary>
-    /// <typeparam name="TField"></typeparam>
-    public class PropertyEnumBinder : CheatControlBinderBase
+    public class FieldEnumBinder : CheatControlBinderBase
     {
         private readonly EnumField _control;
-        private readonly PropertyInfo      _property;
+        private readonly FieldInfo _field;
         private readonly ICheats _cheatObject;
 
-        public PropertyEnumBinder( EnumField control, PropertyInfo property, ICheats cheatObject )
+        public FieldEnumBinder( EnumField control, FieldInfo field, ICheats cheatObject )
         {
-            Assert.IsTrue( property.CanRead || property.CanWrite );
-
             _control            = control;
-            _property         = property;
+            _field         = field;
             _cheatObject = cheatObject;
 
-            if ( property.CanWrite )
+            if ( !field.IsInitOnly && !field.IsLiteral )
                 _control.RegisterValueChangedCallback( OnControlChanged );
             else
                 _control.SetEnabled( false );
@@ -31,7 +28,7 @@ namespace Silentor.CheatPanel.Binders
 
         private void OnControlChanged( ChangeEvent<Enum> changeEvent )
         {
-            _property.SetValue( _cheatObject, changeEvent.newValue );
+            _field.SetValue( _cheatObject, changeEvent.newValue );
         }
 
         public override VisualElement GetControl( )
@@ -46,11 +43,8 @@ namespace Silentor.CheatPanel.Binders
 
         public override void RefreshControl( )
         {
-            if ( _property.CanRead )
-            {
-                var boxedValue = _property.GetValue( _cheatObject );
-                _control.SetValueWithoutNotify( (Enum)boxedValue );
-            }
+            var boxedValue = _field.GetValue( _cheatObject );
+            _control.SetValueWithoutNotify( (Enum)boxedValue );
         }
     }
     
