@@ -347,7 +347,7 @@ namespace Silentor.CheatPanel
         }
 
         /// <summary>
-        /// Frequently check for updates of some system settings
+        /// Frequently check for updates of some system settings on the model side
         /// </summary>
         /// <param name="cancel"></param>
         private async void CheckUpdatesAsync( )

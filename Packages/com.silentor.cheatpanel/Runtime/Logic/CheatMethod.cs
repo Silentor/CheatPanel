@@ -272,7 +272,7 @@ namespace Silentor.CheatPanel
             }
         }
 
-        private (Boolean, Boolean) IsAwaitable( MethodInfo mi )
+        private (Boolean isAwaitable, Boolean isCancellable) IsAwaitable( MethodInfo mi )
         {
             var returnType = mi.ReturnType;
             _getAwaiterMethod = returnType.GetMethod( "GetAwaiter" );

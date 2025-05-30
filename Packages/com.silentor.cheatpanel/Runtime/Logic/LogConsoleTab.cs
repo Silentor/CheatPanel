@@ -204,9 +204,9 @@ namespace Silentor.CheatPanel
         private String _cachedTimeToSeconds;
         private Int32 _cachedTimeToSecondsHash = -1;
 
-        private readonly ProfilerMarker _logItemSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(LogMessageReceivedThreaded)}" );
-        private readonly ProfilerMarker _updateFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(UpdateList)}" );
-        private readonly ProfilerMarker _rebuildFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(ProcessFilterChange)}" );
+        private static readonly ProfilerMarker _logItemSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(LogMessageReceivedThreaded)}" );
+        private static readonly ProfilerMarker _updateFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(UpdateList)}" );
+        private static readonly ProfilerMarker _rebuildFilteredListSampler = new ( ProfilerCategory.Scripts, $"{nameof(LogConsoleTab)}.{nameof(ProcessFilterChange)}" );
 
         protected override VisualElement GenerateContentUI( )
         {
